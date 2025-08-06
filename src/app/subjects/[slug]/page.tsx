@@ -15,7 +15,7 @@ export async function generateMetadata({
 	params: Promise<{ slug: string }>
 }): Promise<Metadata> {
 	const { slug } = await params
-	const filePath = path.join(process.cwd(), "content", `${slug}.md`)
+	const filePath = path.join(process.cwd(), "content/en", `${slug}.md`)
 	if (!fs.existsSync(filePath)) return { title: "Subject Not Found" }
 
 	const fileContent = fs.readFileSync(filePath, "utf8")
