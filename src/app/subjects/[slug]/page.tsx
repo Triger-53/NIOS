@@ -9,37 +9,25 @@ import AdSideBanner from "@/components/ui/AdSideBanner"
 
 export const dynamic = "force-dynamic"
 
-export async function generateMetadata({
-	params,
-}: {
-	params: { slug: string }
-}): Promise<Metadata> {
-	const filePath = path.join(
-		process.cwd(),
-		"content",
-		"en",
-		`${params.slug}.md`
-	)
+type Props = {
+	params: Promise<{ slug: string }>
+}
 
-	if (!fs.existsSync(filePath)) {
-		return { title: "Subject Not Found" }
-	}
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+	const { slug } = await params
+	const filePath = path.join(process.cwd(), "content", "en", `${slug}.md`)
+
+	if (!fs.existsSync(filePath)) return { title: "Subject Not Found" }
 
 	const fileContent = fs.readFileSync(filePath, "utf8")
 	const { data } = matter(fileContent)
 
-	return {
-		title: data.title || "Subject Page",
-	}
+	return { title: data.title || "Subject Page" }
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-	const filePath = path.join(
-		process.cwd(),
-		"content",
-		"en",
-		`${params.slug}.md`
-	)
+export default async function Page({ params }: Props) {
+	const { slug } = await params
+	const filePath = path.join(process.cwd(), "content", "en", `${slug}.md`)
 
 	if (!fs.existsSync(filePath)) {
 		return notFound()
