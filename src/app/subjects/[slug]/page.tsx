@@ -16,8 +16,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
 	const filePath = path.join(
 		process.cwd(),
-		"src",
-		"content",
+		"content", // ✅ fixed path
 		"en",
 		`${params.slug}.md`
 	)
@@ -37,8 +36,7 @@ export async function generateMetadata({
 export default async function Page({ params }: { params: { slug: string } }) {
 	const filePath = path.join(
 		process.cwd(),
-		"src",
-		"content",
+		"content", // ✅ fixed path
 		"en",
 		`${params.slug}.md`
 	)
