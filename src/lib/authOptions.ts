@@ -10,18 +10,20 @@ const authOptions: NextAuthOptions = {
 				password: { label: "Password", type: "password" },
 			},
 			async authorize(credentials) {
-				if (
-					credentials?.username === "advance" &&
-					credentials?.password === "notes123"
-				) {
-					return { id: "1", name: "Advance User" }
-				}
+				// 🔍 Debug logs
+				console.log("🟡 Username from .env:", process.env.USERNAME)
+				console.log("🟡 Password from .env:", process.env.PASSWORD)
+				console.log("🟢 Input username:", credentials?.username)
+				console.log("🟢 Input password:", credentials?.password)
+
+				const validUsername = process.env.USERNAME
+				const validPassword = process.env.PASSWORD
 
 				if (
-					credentials?.username === "premium" &&
-					credentials?.password === "pass123"
+					credentials?.username === validUsername &&
+					credentials?.password === validPassword
 				) {
-					return { id: "2", name: "Premium User" }
+					return { id: "1", name: credentials?.username || "User" }
 				}
 
 				return null
