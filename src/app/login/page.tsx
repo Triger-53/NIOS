@@ -8,17 +8,22 @@ export default function LoginPage() {
 	const router = useRouter()
 	const [error, setError] = useState("")
 
-	const handleSubmit = async (e: any) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
+
+		const form = e.currentTarget
+		const username = (form.elements.namedItem("username") as HTMLInputElement)
+			.value
+		const password = (form.elements.namedItem("password") as HTMLInputElement)
+			.value
 
 		const res = await signIn("credentials", {
 			redirect: false,
-			username: e.target.username.value,
-			password: e.target.password.value,
+			username,
+			password,
 		})
 
 		if (res?.ok) {
-			const username = e.target.username.value
 			if (username === "premium") {
 				router.push("/premium")
 			} else if (username === "advance") {
