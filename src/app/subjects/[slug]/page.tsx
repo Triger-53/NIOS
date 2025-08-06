@@ -9,14 +9,22 @@ import AdSideBanner from "@/components/ui/AdSideBanner"
 
 export const dynamic = "force-dynamic"
 
+// ✅ FIXED: params is NOT a Promise
 export async function generateMetadata({
 	params,
 }: {
-	params: Promise<{ slug: string }>
+	params: { slug: string }
 }): Promise<Metadata> {
-	const { slug } = await params
-	const filePath = path.join(process.cwd(), "content/en", `${slug}.md`)
-	if (!fs.existsSync(filePath)) return { title: "Subject Not Found" }
+	const filePath = path.join(
+		process.cwd(),
+		"content",
+		"en",
+		`${params.slug}.md`
+	)
+
+	if (!fs.existsSync(filePath)) {
+		return { title: "Subject Not Found" }
+	}
 
 	const fileContent = fs.readFileSync(filePath, "utf8")
 	const { data } = matter(fileContent)
@@ -26,15 +34,17 @@ export async function generateMetadata({
 	}
 }
 
-export default async function Page({
-	params,
-}: {
-	params: Promise<{ slug: string }>
-}) {
-	const { slug } = await params
-	const filePath = path.join(process.cwd(), "content", `${slug}.md`)
+export default async function Page({ params }: { params: { slug: string } }) {
+	const filePath = path.join(
+		process.cwd(),
+		"content",
+		"en",
+		`${params.slug}.md`
+	)
 
-	if (!fs.existsSync(filePath)) return notFound()
+	if (!fs.existsSync(filePath)) {
+		return notFound()
+	}
 
 	const fileContent = fs.readFileSync(filePath, "utf8")
 	const { data, content } = matter(fileContent)
