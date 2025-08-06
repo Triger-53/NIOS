@@ -9,7 +9,7 @@ import AdSideBanner from "@/components/ui/AdSideBanner"
 
 export const dynamic = "force-dynamic"
 
-// ✅ FIXED: params is NOT a Promise
+// ✅ Correct params type (not a Promise)
 export async function generateMetadata({
 	params,
 }: {
@@ -34,6 +34,7 @@ export async function generateMetadata({
 	}
 }
 
+// ✅ Correct params type here as well
 export default async function Page({ params }: { params: { slug: string } }) {
 	const filePath = path.join(
 		process.cwd(),
