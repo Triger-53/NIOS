@@ -9,9 +9,6 @@ import { subjects } from "@/lib/subjectList"
 export default function HomePage() {
 	const { data: session } = useSession()
 
-	// Identify user role based on name
-	const userRole = session?.user?.name?.toLowerCase()
-
 	return (
 		<main className="min-h-screen bg-white p-6 md:p-12 text-gray-900">
 			<section className="text-center max-w-4xl mx-auto mb-12">
@@ -23,13 +20,28 @@ export default function HomePage() {
 					powered by students, for students.
 				</p>
 
+				{/* ✅ Greet logged-in user */}
+				{session && (
+					<p className="text-md text-green-700 font-medium mb-4">
+						👋 Welcome, {session.user?.name}!
+					</p>
+				)}
+
 				<div className="flex flex-wrap justify-center gap-4">
 					<Button size="lg" asChild>
 						<Link href="/subjects">📘 Start Learning</Link>
 					</Button>
 
-					{/* Not logged in */}
-					{!session && (
+					{session ? (
+						<>
+							<Button size="lg" variant="outline" asChild>
+								<Link href="/premium-pass">⬆️ Upgrade to Premium</Link>
+							</Button>
+							<Button size="lg" variant="destructive" onClick={() => signOut()}>
+								🚪 Sign Out
+							</Button>
+						</>
+					) : (
 						<>
 							<Button size="lg" variant="outline" asChild>
 								<Link href="/advance-notes">📗 Get Advance Notes</Link>
@@ -41,25 +53,6 @@ export default function HomePage() {
 								<Link href="/login">🔐 Login</Link>
 							</Button>
 						</>
-					)}
-
-					{/* Logged in as advance */}
-					{userRole === "advance user" && (
-						<>
-							<Button size="lg" variant="outline" asChild>
-								<Link href="/premium-pass">⬆️ Upgrade to Premium</Link>
-							</Button>
-							<Button size="lg" variant="destructive" onClick={() => signOut()}>
-								🚪 Sign Out
-							</Button>
-						</>
-					)}
-
-					{/* Logged in as premium */}
-					{userRole === "premium user" && (
-						<Button size="lg" variant="destructive" onClick={() => signOut()}>
-							🚪 Sign Out
-						</Button>
 					)}
 				</div>
 			</section>
