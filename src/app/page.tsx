@@ -35,7 +35,7 @@ export default function HomePage() {
 					{session ? (
 						<>
 							<Button size="lg" variant="outline" asChild>
-								<Link href="/premium-pass">⬆️ Upgrade to Premium</Link>
+								<Link href="/premium">⬆️ Upgrade to Premium</Link>
 							</Button>
 							<Button size="lg" variant="destructive" onClick={() => signOut()}>
 								🚪 Sign Out
@@ -47,7 +47,7 @@ export default function HomePage() {
 								<Link href="/advance-notes">📗 Get Advance Notes</Link>
 							</Button>
 							<Button size="lg" variant="outline" asChild>
-								<Link href="/premium-pass">🪙 Get Premium Pass</Link>
+								<Link href="/premium">🪙 Get Premium Pass</Link>
 							</Button>
 							<Button size="lg" variant="ghost" asChild>
 								<Link href="/login">🔐 Login</Link>
