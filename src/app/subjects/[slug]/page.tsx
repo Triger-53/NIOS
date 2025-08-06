@@ -4,22 +4,23 @@ import matter from "gray-matter"
 import { remark } from "remark"
 import html from "remark-html"
 import { notFound } from "next/navigation"
-import { Metadata } from "next"
+import type { Metadata } from "next"
 import AdSideBanner from "@/components/ui/AdSideBanner"
 
 export const dynamic = "force-dynamic"
 
+type Params = {
+	slug: string
+}
+
+// ✅ Fix: Await `params` in Next.js 15
 export async function generateMetadata({
 	params,
 }: {
-	params: { slug: string }
+	params: Promise<Params>
 }): Promise<Metadata> {
-	const filePath = path.join(
-		process.cwd(),
-		"content", // ✅ fixed path
-		"en",
-		`${params.slug}.md`
-	)
+	const { slug } = await params
+	const filePath = path.join(process.cwd(), "content", "en", `${slug}.md`)
 
 	if (!fs.existsSync(filePath)) {
 		return { title: "Subject Not Found" }
@@ -33,13 +34,9 @@ export async function generateMetadata({
 	}
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-	const filePath = path.join(
-		process.cwd(),
-		"content", // ✅ fixed path
-		"en",
-		`${params.slug}.md`
-	)
+export default async function Page({ params }: { params: Promise<Params> }) {
+	const { slug } = await params
+	const filePath = path.join(process.cwd(), "content", "en", `${slug}.md`)
 
 	if (!fs.existsSync(filePath)) {
 		return notFound()
