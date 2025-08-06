@@ -4,18 +4,16 @@ import matter from "gray-matter"
 import { remark } from "remark"
 import html from "remark-html"
 import { notFound } from "next/navigation"
-import type { Metadata } from "next"
+import type { Metadata, ResolvingMetadata } from "next"
 import AdSideBanner from "@/components/ui/AdSideBanner"
 
 export const dynamic = "force-dynamic"
 
-type Props = {
-	params: {
-		slug: string
-	}
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+// ✅ Correct param typing — DO NOT use PageProps or any extra import
+export async function generateMetadata(
+	{ params }: { params: { slug: string } },
+	_parent?: ResolvingMetadata
+): Promise<Metadata> {
 	const filePath = path.join(
 		process.cwd(),
 		"content",
@@ -35,7 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	}
 }
 
-export default async function Page({ params }: Props) {
+// ✅ No external type import — inline the param type directly
+export default async function Page({ params }: { params: { slug: string } }) {
 	const filePath = path.join(
 		process.cwd(),
 		"content",
