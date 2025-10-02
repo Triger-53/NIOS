@@ -17,18 +17,27 @@ function toTitleCase(str: string) {
 }
 
 export function getAllSubjects(): Omit<Subject, "content">[] {
-	const subjectFiles = ["accountancy.json", "english.json"]
-
 	try {
+		const allFiles = fs.readdirSync(subjectsDirectory)
+		const subjectFiles = allFiles.filter(
+			(file) =>
+				file.endsWith(".json") &&
+				!["package.json", "package-lock.json", "tsconfig.json"].includes(
+					file
+				)
+		)
+
 		const allSubjectsData = subjectFiles.map((fileName) => {
 			const slug = fileName.replace(/\.json$/, "")
 			const filePath = path.join(subjectsDirectory, fileName)
 			const fileContents = fs.readFileSync(filePath, "utf8")
 			const data = JSON.parse(fileContents)
 
-			const firstLesson = data.lessons?.[0] || data.accountancy?.[0]
 			const description =
-				firstLesson?.objectives?.[0] || "Notes and materials for this subject."
+				data.description ||
+				data.lessons?.[0]?.objectives?.[0] ||
+				data[slug]?.[0]?.objectives?.[0] ||
+				"Notes and materials for this subject."
 
 			return {
 				slug,
@@ -50,9 +59,11 @@ export function getSubjectData(slug: string): Subject | null {
 	try {
 		const fileContents = fs.readFileSync(filePath, "utf8")
 		const data = JSON.parse(fileContents)
-		const firstLesson = data.lessons?.[0] || data.accountancy?.[0]
 		const description =
-			firstLesson?.objectives?.[0] || "Notes and materials for this subject."
+			data.description ||
+			data.lessons?.[0]?.objectives?.[0] ||
+			data[slug]?.[0]?.objectives?.[0] ||
+			"Notes and materials for this subject."
 
 		return {
 			slug,
