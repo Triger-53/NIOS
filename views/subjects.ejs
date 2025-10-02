@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Subjects - NIOS App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <main class="min-h-screen p-6 md:p-12">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-3xl font-bold mb-8 text-center">All Subjects</h1>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% subjects.forEach(function(subj) { %>
+          <div class="border rounded-lg p-6 hover:shadow-xl transition">
+            <h2 class="text-xl font-semibold mb-2"><%= subj.title %></h2>
+            <p class="text-sm text-gray-600 mb-4"><%= subj.description %></p>
+            <a class="text-blue-600 hover:underline text-sm" href="/subjects/<%= subj.slug %>">
+              View Notes →
+            </a>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
