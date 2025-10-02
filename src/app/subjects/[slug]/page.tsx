@@ -29,7 +29,8 @@ export default function SubjectPage({ params }: { params: { slug: string } }) {
 		notFound()
 	}
 
-	const lessons = subject.content.lessons || subject.content.accountancy || []
+	const lessons =
+		subject.content.lessons || subject.content[subject.slug] || []
 
 	return (
 		<main className="min-h-screen p-6 md:p-12">

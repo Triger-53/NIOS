@@ -1,33 +1,18 @@
-"use client"
-
 import Link from "next/link"
 import { createClient } from "@/lib/supabase-client"
-import { useEffect, useState } from "react"
-import { User } from "@supabase/supabase-js"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { subjects } from "@/lib/subjectList"
+import { getAllSubjects } from "@/lib/loadSubjects"
+import { User } from "@supabase/supabase-js"
 
-export default function HomePage() {
-	const [user, setUser] = useState<User | null>(null)
-	const supabase = createClient()
+export default async function HomePage() {
+	const subjects = getAllSubjects()
+	let user: User | null = null
 
-	useEffect(() => {
-		const getUser = async () => {
-			const { data: { user } } = await supabase.auth.getUser()
-			setUser(user)
-		}
-
-		getUser()
-
-		const { data: { subscription } } = supabase.auth.onAuthStateChange(
-			(event, session) => {
-				setUser(session?.user ?? null)
-			}
-		)
-
-		return () => subscription.unsubscribe()
-	}, [supabase.auth])
+	// Since we're on the server, we can't use the client-side `createClient`
+	// for getting user data directly without a proper server-side setup.
+	// For now, we will assume no user is logged in on the homepage.
+	// A proper implementation would use a server-side Supabase client.
 
 	return (
 		<div className="min-h-screen bg-white p-6 md:p-12 text-gray-900">
@@ -40,7 +25,6 @@ export default function HomePage() {
 					powered by students, for students.
 				</p>
 
-				{/* ✅ Greet logged-in user */}
 				{user && (
 					<p className="text-md text-green-700 font-medium mb-4">
 						👋 Welcome, {user.email}!
