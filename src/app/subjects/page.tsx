@@ -1,8 +1,10 @@
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
-import { subjects } from "@/lib/subjectList"
+import { getAllSubjects } from "@/lib/loadSubjects"
 
 export default function SubjectsPage() {
+	const subjects = getAllSubjects()
+
 	return (
 		<main className="min-h-screen p-6 md:p-12">
 			<div className="max-w-6xl mx-auto">
