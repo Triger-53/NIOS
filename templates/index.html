@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ book['book_title'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>{{ book['book_title'] }}</h1>
+        <h2>Class: {{ book['class'] }} | Subject: {{ book['subject'] }}</h2>
+
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                {% for unit in units %}
+                    <li><a href="{{ url_for('unit', unit_id=unit['id']) }}">{{ unit['display_title'] }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

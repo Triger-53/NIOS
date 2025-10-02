@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ chapter['chapter_title'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('unit', unit_id=chapter['unit_id']) }}">Back to Unit</a>
+        <h1>{{ chapter['chapter_title'] }}</h1>
+
+        {% for item in sections_with_content %}
+            <div class="section">
+                <h3>{{ item['section']['section_title'] }}</h3>
+                {% for block in item['content_blocks'] %}
+                    {% if block['block_type'] == 'paragraph' %}
+                        <p>{{ block['text'] }}</p>
+                    {% else %}
+                        <div>{{ block['text'] }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

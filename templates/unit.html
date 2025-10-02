@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ unit['unit_title'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('index') }}">Home</a>
+        <h1>{{ unit['unit_title'] }}</h1>
+
+        <div class="toc">
+            <h4>Chapters</h4>
+            <ul>
+                {% for chapter in chapters %}
+                    <li><a href="{{ url_for('chapter', chapter_id=chapter['id']) }}">{{ chapter['chapter_title'] }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
