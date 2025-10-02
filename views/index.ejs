@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NIOS App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="min-h-screen bg-white p-6 md:p-12 text-gray-900">
+    <section class="text-center max-w-4xl mx-auto mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">
+        Master NIOS Class 10 in 1 Day (English Medium)
+      </h1>
+      <p class="text-lg md:text-xl mb-6">
+        Free notes, practice papers, and guides for all major subjects —
+        powered by students, for students.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="/subjects" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg text-lg">📘 Start Learning</a>
+      </div>
+    </section>
+
+    <section class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+      <% subjects.forEach(function(subj) { %>
+        <div class="border rounded-lg p-6 hover:shadow-xl transition">
+          <h2 class="text-xl font-semibold mb-2"><%= subj.title %></h2>
+          <p class="text-sm text-gray-600 mb-4"><%= subj.description %></p>
+          <a class="text-blue-600 hover:underline text-sm" href="/subjects/<%= subj.slug %>">
+            View Notes →
+          </a>
+        </div>
+      <% }); %>
+    </section>
+  </div>
+</body>
+</html>
