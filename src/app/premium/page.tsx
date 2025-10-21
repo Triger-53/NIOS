@@ -33,7 +33,7 @@ export default function PremiumPage() {
 	}
 
 	if (!user) {
-		router.push("/login")
+		router.push("/register?plan=premium")
 		return null
 	}
 

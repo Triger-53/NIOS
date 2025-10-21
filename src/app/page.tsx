@@ -1,17 +1,20 @@
 import Link from "next/link"
+import { cookies } from "next/headers"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getAllSubjects } from "@/lib/loadSubjects"
-import { User } from "@supabase/supabase-js"
+import { createClient } from "@/lib/supabase-server"
+import SignOut from "@/components/SignOut"
+
+export const dynamic = "force-dynamic"
 
 export default async function HomePage() {
 	const subjects = getAllSubjects()
-	const user: User | null = null
-
-	// Since we're on the server, we can't use the client-side `createClient`
-	// for getting user data directly without a proper server-side setup.
-	// For now, we will assume no user is logged in on the homepage.
-	// A proper implementation would use a server-side Supabase client.
+	const cookieStore = cookies()
+	const supabase = createClient(cookieStore)
+	const {
+		data: { user },
+	} = await supabase.auth.getUser()
 
 	return (
 		<div className="min-h-screen bg-white p-6 md:p-12 text-gray-900">
@@ -40,6 +43,7 @@ export default async function HomePage() {
 							<Button size="lg" variant="outline" asChild>
 								<Link href="/premium">⬆️ Upgrade to Premium</Link>
 							</Button>
+							<SignOut />
 						</>
 					) : (
 						<>
