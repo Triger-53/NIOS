@@ -4,22 +4,35 @@ import { createClient } from "@/lib/supabase-client"
 import { useEffect, useState } from "react"
 import { User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
+import { Profile } from "@/types"
 
 export default function PremiumPage() {
 	const [user, setUser] = useState<User | null>(null)
 	const [loading, setLoading] = useState(true)
+	const [profile, setProfile] = useState<Profile | null>(null)
 	const supabase = createClient()
 	const router = useRouter()
 
 	useEffect(() => {
-		const getUser = async () => {
-			const { data: { user } } = await supabase.auth.getUser()
+		const getData = async () => {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser()
 			setUser(user)
+
+			if (user) {
+				const { data: profile } = await supabase
+					.from("profiles")
+					.select("*")
+					.eq("id", user.id)
+					.single()
+				setProfile(profile)
+			}
 			setLoading(false)
 		}
 
-		getUser()
-	}, [supabase.auth])
+		getData()
+	}, [supabase.auth, supabase, router])
 
 	if (loading) {
 		return (
@@ -34,6 +47,11 @@ export default function PremiumPage() {
 
 	if (!user) {
 		router.push("/register?plan=premium")
+		return null
+	}
+
+	if (profile && profile.plan !== "premium") {
+		router.push("/")
 		return null
 	}
 
