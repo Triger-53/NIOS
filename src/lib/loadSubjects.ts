@@ -1,5 +1,8 @@
 import fs from "fs"
 import path from "path"
+import matter from "gray-matter"
+import { remark } from "remark"
+import html from "remark-html"
 
 const subjectsDirectory = process.cwd()
 
@@ -19,30 +22,18 @@ function toTitleCase(str: string) {
 export function getAllSubjects(): Omit<Subject, "content">[] {
 	try {
 		const allFiles = fs.readdirSync(subjectsDirectory)
-		const subjectFiles = allFiles.filter(
-			(file) =>
-				file.endsWith(".json") &&
-				!["package.json", "package-lock.json", "tsconfig.json"].includes(
-					file
-				)
-		)
+		const subjectFiles = allFiles.filter((file) => file.endsWith(".md"))
 
 		const allSubjectsData = subjectFiles.map((fileName) => {
-			const slug = fileName.replace(/\.json$/, "")
+			const slug = fileName.replace(/\.md$/, "")
 			const filePath = path.join(subjectsDirectory, fileName)
 			const fileContents = fs.readFileSync(filePath, "utf8")
-			const data = JSON.parse(fileContents)
-
-			const description =
-				data.description ||
-				data.lessons?.[0]?.objectives?.[0] ||
-				data[slug]?.[0]?.objectives?.[0] ||
-				"Notes and materials for this subject."
+			const { data } = matter(fileContents)
 
 			return {
 				slug,
-				title: toTitleCase(slug.replace(/-/g, " ")),
-				description: description,
+				title: data.title || toTitleCase(slug.replace(/-/g, " ")),
+				description: data.description || "Notes and materials for this subject.",
 			}
 		})
 
@@ -53,23 +44,21 @@ export function getAllSubjects(): Omit<Subject, "content">[] {
 	}
 }
 
-export function getSubjectData(slug: string): Subject | null {
-	const filePath = path.join(subjectsDirectory, `${slug}.json`)
+export async function getSubjectData(slug: string): Promise<Subject | null> {
+	const filePath = path.join(subjectsDirectory, `${slug}.md`)
 
 	try {
 		const fileContents = fs.readFileSync(filePath, "utf8")
-		const data = JSON.parse(fileContents)
-		const description =
-			data.description ||
-			data.lessons?.[0]?.objectives?.[0] ||
-			data[slug]?.[0]?.objectives?.[0] ||
-			"Notes and materials for this subject."
+		const { data, content } = matter(fileContents)
+
+		const processedContent = await remark().use(html).process(content)
+		const contentHtml = processedContent.toString()
 
 		return {
 			slug,
-			title: toTitleCase(slug.replace(/-/g, " ")),
-			description: description,
-			content: data,
+			title: data.title || toTitleCase(slug.replace(/-/g, " ")),
+			description: data.description || "Notes and materials for this subject.",
+			content: contentHtml,
 		}
 	} catch (error) {
 		console.error(`Error reading or parsing subject data for ${slug}:`, error)
