@@ -33,7 +33,7 @@ export default function AdvanceNotesPage() {
 	}
 
 	if (!user) {
-		router.push("/login")
+		router.push("/register?plan=advanced")
 		return null
 	}
 

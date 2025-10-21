@@ -1,17 +1,27 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { createClient } from "@/lib/supabase-client"
 import { Button } from "@/components/ui/button"
 
 export default function Register() {
 	const router = useRouter()
+	const searchParams = useSearchParams()
+	const [plan, setPlan] = useState("")
 	const [email, setEmail] = useState("")
 	const [password, setPassword] = useState("")
+	const [username, setUsername] = useState("")
 	const [status, setStatus] = useState("")
 	const [loading, setLoading] = useState(false)
 	const supabase = createClient()
+
+	useEffect(() => {
+		const planFromParams = searchParams.get("plan")
+		if (planFromParams) {
+			setPlan(planFromParams)
+		}
+	}, [searchParams])
 
 	const handleRegister = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -21,6 +31,12 @@ export default function Register() {
 		const { error } = await supabase.auth.signUp({
 			email,
 			password,
+			options: {
+				data: {
+					username,
+					plan,
+				},
+			},
 		})
 
 		if (error) {
@@ -36,6 +52,14 @@ export default function Register() {
 		<main className="max-w-md mx-auto p-8">
 			<h1 className="text-2xl font-bold mb-4">Create Your Account</h1>
 			<form onSubmit={handleRegister} className="space-y-4">
+				<input
+					type="text"
+					placeholder="Username"
+					required
+					value={username}
+					onChange={(e) => setUsername(e.target.value)}
+					className="w-full border p-2 rounded"
+				/>
 				<input
 					type="email"
 					placeholder="Email"
