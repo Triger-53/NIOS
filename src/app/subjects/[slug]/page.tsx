@@ -1,5 +1,6 @@
 import { getSubjectData, getAllSubjects } from "@/lib/loadSubjects"
 import { notFound } from "next/navigation"
+import StyledMarkdown from '@/components/StyledMarkdown'
 
 export async function generateStaticParams() {
 	const subjects = getAllSubjects()
@@ -24,10 +25,7 @@ export default async function SubjectPage({ params }: { params: Promise<{ slug: 
 					<p className="text-lg text-gray-600">{subject.description}</p>
 				</div>
 
-				<div
-					className="prose lg:prose-xl max-w-none"
-					dangerouslySetInnerHTML={{ __html: subject.content }}
-				/>
+				<StyledMarkdown content={subject.content} />
 			</div>
 		</main>
 	)

@@ -1,8 +1,6 @@
 import fs from "fs"
 import path from "path"
 import matter from "gray-matter"
-import { remark } from "remark"
-import html from "remark-html"
 
 const subjectsDirectory = process.cwd()
 
@@ -10,7 +8,7 @@ interface Subject {
 	slug: string
 	title: string
 	description: string
-	content: any
+	content: string
 }
 
 function toTitleCase(str: string) {
@@ -51,14 +49,11 @@ export async function getSubjectData(slug: string): Promise<Subject | null> {
 		const fileContents = fs.readFileSync(filePath, "utf8")
 		const { data, content } = matter(fileContents)
 
-		const processedContent = await remark().use(html).process(content)
-		const contentHtml = processedContent.toString()
-
 		return {
 			slug,
 			title: data.title || toTitleCase(slug.replace(/-/g, " ")),
 			description: data.description || "Notes and materials for this subject.",
-			content: contentHtml,
+			content: content,
 		}
 	} catch (error) {
 		console.error(`Error reading or parsing subject data for ${slug}:`, error)
