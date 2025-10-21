@@ -16,6 +16,10 @@ export default async function HomePage() {
 		data: { user },
 	} = await supabase.auth.getUser()
 
+	const { data: profile } = user
+		? await supabase.from("profiles").select("*").eq("id", user.id).single()
+		: { data: null }
+
 	return (
 		<div className="min-h-screen bg-white p-6 md:p-12 text-gray-900">
 			<section className="text-center max-w-4xl mx-auto mb-12">
@@ -27,9 +31,9 @@ export default async function HomePage() {
 					powered by students, for students.
 				</p>
 
-				{user && (
+				{profile && (
 					<p className="text-md text-green-700 font-medium mb-4">
-						👋 Welcome, {user.email}!
+						👋 Welcome, {profile.username}!
 					</p>
 				)}
 
@@ -40,9 +44,16 @@ export default async function HomePage() {
 
 					{user ? (
 						<>
-							<Button size="lg" variant="outline" asChild>
-								<Link href="/premium">⬆️ Upgrade to Premium</Link>
-							</Button>
+							{profile?.plan === "advanced" && (
+								<Button size="lg" variant="outline" asChild>
+									<Link href="/advance-notes">📗 My Advance Notes</Link>
+								</Button>
+							)}
+							{profile?.plan === "premium" && (
+								<Button size="lg" variant="outline" asChild>
+									<Link href="/premium">🪙 My Premium Pass</Link>
+								</Button>
+							)}
 							<SignOut />
 						</>
 					) : (
