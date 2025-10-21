@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { createClient } from "@/lib/supabase-client"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getAllSubjects } from "@/lib/loadSubjects"
@@ -7,7 +6,7 @@ import { User } from "@supabase/supabase-js"
 
 export default async function HomePage() {
 	const subjects = getAllSubjects()
-	let user: User | null = null
+	const user: User | null = null
 
 	// Since we're on the server, we can't use the client-side `createClient`
 	// for getting user data directly without a proper server-side setup.
