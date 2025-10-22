@@ -5,19 +5,19 @@ import { Button } from "./button"
 
 export default function Navbar() {
 	return (
-		<header className="bg-white border-b shadow-sm sticky top-0 w-full z-50">
-			<nav className="container mx-auto px-4 py-3 flex justify-between items-center">
-				<Link href="/" className="text-xl font-bold text-gray-900">
+		<header className="sticky top-0 w-full z-50">
+			<nav className="container bg-white/80 backdrop-blur-sm max-w-7xl mx-auto px-6 py-3 mt-4 rounded-full shadow-md border flex justify-between items-center">
+				<Link href="/" className="text-xl font-bold text-zinc-900">
 					NIOS Class 10
 				</Link>
 
-				<div className="flex gap-6 text-gray-700 text-sm font-medium items-center">
-					<Link href="/">Home</Link>
-					<Link href="/subjects">Subjects</Link>
-					<Link href="/about">About</Link>
-					<Link href="/contact">Contact</Link>
+				<div className="flex gap-6 text-zinc-700 text-sm font-semibold items-center">
+					<Link href="/" className="hover:text-zinc-900 transition-colors">Home</Link>
+					<Link href="/subjects" className="hover:text-zinc-900 transition-colors">Subjects</Link>
+					<Link href="/about" className="hover:text-zinc-900 transition-colors">About</Link>
+					<Link href="/contact" className="hover:text-zinc-900 transition-colors">Contact</Link>
 					
-					<Button asChild size="sm">
+					<Button asChild size="sm" className="rounded-full">
 						<Link href="/login">Login</Link>
 					</Button>
 				</div>

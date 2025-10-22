@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 
 const StyledMarkdown = ({ content }: { content: string }) => {
   return (
-    <article className="markdown-body">
+    <article className="prose prose-zinc lg:prose-xl max-w-none markdown-body">
         <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
