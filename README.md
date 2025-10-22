@@ -32,11 +32,11 @@ The user journey is designed to be simple and intuitive, allowing students to st
 1.  **First Visit:** When a new user lands on the site, they are greeted with the headline: "Master NIOS Class 10 in 1 Day (English Medium)." Below this, they will find subject cards that lead to free notes.
 2.  **Exploring Free Content:** Users can browse and read all free notes without needing an account.
 3.  **Upgrading to a Plan:** While exploring, users will encounter opportunities to upgrade to the **Advance** or **Premium** plans for more comprehensive resources.
-4.  **Purchase and Sign-up:** To purchase a plan, users will complete the payment process through **Razorpay**. After a successful payment, they will be prompted to sign up for an account using **Supabase** to claim their purchase.
+4.  **Sign-up and Purchase:** To purchase a plan, users are first prompted to sign up or log in. Once authenticated with **Supabase**, they proceed to the payment process with **Razorpay**. After a successful payment, their account is automatically upgraded. This ensures every purchase is tied to a user account.
 5.  **Authenticated Experience:** Once logged in, the user's dashboard will be personalized:
     *   A welcome message will greet them by name.
     *   The "Log In" button will change to "Sign Out."
-    *   The "Get Advance Notes" and "Get Premium Pass" buttons will be replaced with "My Advanced Notes" and "Upgrade to Premium Pass" (for Advance users) or "My Premium Pass" (for Premium users).
+    *   The "Get Advance Notes" and "Get Premium Pass" buttons will be replaced with links to their purchased content (e.g., "My Advanced Notes" or "My Premium Pass").
 6.  **Accessing Paid Content:** Logged-in users can easily navigate to their purchased content, including advanced notes, mind maps, videos, quizzes, and the AI tutor.
 
 ## Key Features
@@ -78,3 +78,4 @@ As the platform grows, we will explore more scalable solutions, such as a headle
 ## Feedback and Support
 
 We are committed to providing the best possible learning experience for our students. If you have any feedback, suggestions, or would like to report a mistake in the notes, please [provide instructions on how to submit feedback, e.g., "open an issue on our GitHub repository" or "contact us at support@example.com"].
+We are committed to providing the best possible learning experience for our students. If you have any feedback, suggestions, or would like to report a mistake in the notes, please contact us at **support@yourdomain.com**.
