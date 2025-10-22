@@ -9,8 +9,13 @@ export async function generateStaticParams() {
 	}))
 }
 
-export default async function SubjectPage({ params }: { params: Promise<{ slug: string }> }) {
-	const { slug } = await params;
+type PageProps = {
+	params: { slug: string };
+	searchParams: { [key: string]: string | string[] | undefined };
+};
+
+export default async function SubjectPage({ params }: PageProps) {
+	const { slug } = params;
 	const decodedSlug = decodeURIComponent(slug);
 	const subject = await getSubjectData(decodedSlug)
 
