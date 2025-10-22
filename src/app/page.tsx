@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getAllSubjects } from "@/lib/loadSubjects"
@@ -10,8 +9,7 @@ export const dynamic = "force-dynamic"
 
 export default async function HomePage() {
 	const subjects = getAllSubjects()
-	const cookieStore = cookies()
-	const supabase = createClient(cookieStore)
+	const supabase = createClient()
 	const {
 		data: { user },
 	} = await supabase.auth.getUser()

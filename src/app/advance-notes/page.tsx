@@ -61,8 +61,18 @@ export default async function AdvanceNotesPage() {
 	}
 
 	const contentPath = path.join(process.cwd(), "Content", "Advanced")
-	const subjects = (await fs.readdir(contentPath)).filter(item =>
-		fs.statSync(path.join(contentPath, item)).isDirectory()
+	const items = await fs.readdir(contentPath)
+	const subjectPromises = items.map(async item => {
+		try {
+			const itemPath = path.join(contentPath, item)
+			const stats = await fs.stat(itemPath)
+			return stats.isDirectory() ? item : null
+		} catch {
+			return null
+		}
+	})
+	const subjects = (await Promise.all(subjectPromises)).filter(
+		(subject): subject is string => subject !== null
 	)
 
 	return (

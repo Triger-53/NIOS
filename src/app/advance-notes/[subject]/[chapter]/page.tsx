@@ -9,11 +9,14 @@ import { createClient } from "@/lib/supabase-server"
 import { redirect } from "next/navigation"
 import { Profile } from "@/types"
 
-export default async function ChapterPage({
-	params,
-}: {
-	params: { subject: string; chapter: string }
-}) {
+type PageProps = {
+	params: Promise<{
+		subject: string
+		chapter: string
+	}>
+}
+
+export default async function ChapterPage({ params }: PageProps) {
 	const supabase = createClient()
 	const {
 		data: { user },
@@ -33,8 +36,9 @@ export default async function ChapterPage({
 		redirect("/")
 	}
 
-	const subjectName = decodeURIComponent(params.subject)
-	const chapterName = decodeURIComponent(params.chapter)
+	const { subject, chapter } = await params
+	const subjectName = decodeURIComponent(subject)
+	const chapterName = decodeURIComponent(chapter)
 	const filePath = path.join(
 		process.cwd(),
 		"Content",
