@@ -1,7 +1,9 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
-import { type cookies } from "next/headers"
+import { cookies } from "next/headers"
 
-export function createClient(cookieStore: ReturnType<typeof cookies>) {
+export function createClient() {
+	const cookieStore = cookies()
+
 	return createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -11,26 +13,12 @@ export function createClient(cookieStore: ReturnType<typeof cookies>) {
 					return (await cookieStore).get(name)?.value
 				},
 				async set(name: string, value: string, options: CookieOptions) {
-					try {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-						;(await cookieStore).set({ name, value, ...options })
-					} catch (_error) {
-						// The `set` method was called from a Server Component.
-						// This can be ignored if you have middleware refreshing
-						// user sessions.
-					}
+					await (await cookieStore).set({ name, value, ...options })
 				},
 				async remove(name: string, options: CookieOptions) {
-					try {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-						;(await cookieStore).set({ name, value: "", ...options })
-					} catch (_error) {
-						// The `remove` method was called from a Server Component.
-						// This can be ignored if you have middleware refreshing
-						// user sessions.
-					}
+					await (await cookieStore).delete({ name, ...options })
 				},
 			},
-		}
+		},
 	)
 }
