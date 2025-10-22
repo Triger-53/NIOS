@@ -6,11 +6,13 @@ import { createClient } from "@/lib/supabase-server"
 import { redirect } from "next/navigation"
 import { Profile } from "@/types"
 
-export default async function SubjectPage({
-	params,
-}: {
-	params: { subject: string }
-}) {
+type PageProps = {
+	params: Promise<{
+		subject: string
+	}>
+}
+
+export default async function SubjectPage({ params }: PageProps) {
 	const supabase = createClient()
 	const {
 		data: { user },
@@ -30,7 +32,8 @@ export default async function SubjectPage({
 		redirect("/")
 	}
 
-	const subjectName = decodeURIComponent(params.subject)
+	const { subject } = await params
+	const subjectName = decodeURIComponent(subject)
 	const contentPath = path.join(
 		process.cwd(),
 		"Content",
@@ -48,9 +51,7 @@ export default async function SubjectPage({
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{chapters.map(chapter => (
 					<Link
-						href={`/advance-notes/${params.subject}/${encodeURIComponent(
-							chapter
-						)}`}
+						href={`/advance-notes/${subject}/${encodeURIComponent(chapter)}`}
 						key={chapter}
 					>
 						<Button className="w-full">{chapter.replace(".md", "")}</Button>
