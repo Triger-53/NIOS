@@ -11,7 +11,8 @@ export async function generateStaticParams() {
 
 export default async function SubjectPage({ params }: { params: Promise<{ slug: string }> }) {
 	const { slug } = await params;
-	const subject = await getSubjectData(slug)
+	const decodedSlug = decodeURIComponent(slug);
+	const subject = await getSubjectData(decodedSlug)
 
 	if (!subject) {
 		notFound()
