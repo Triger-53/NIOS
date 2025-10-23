@@ -19,12 +19,12 @@ export default async function HomePage() {
 		: { data: null }
 
 	return (
-		<div className="min-h-screen bg-white p-6 md:p-12 text-gray-900">
+		<div className="min-h-screen bg-white p-4 md:p-12 text-gray-900">
 			<section className="text-center max-w-4xl mx-auto mb-12">
-				<h1 className="text-4xl md:text-5xl font-bold mb-4">
+				<h1 className="text-3xl md:text-5xl font-bold mb-4">
 					Master NIOS Class 10 in 1 Day (English Medium)
 				</h1>
-				<p className="text-lg md:text-xl mb-6">
+				<p className="text-md md:text-xl mb-6">
 					Free notes, practice papers, and guides for all major subjects —
 					powered by students, for students.
 				</p>
@@ -70,7 +70,7 @@ export default async function HomePage() {
 				</div>
 			</section>
 
-			<section className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+			<section className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
 				{subjects.map((subj) => (
 					<Card key={subj.slug} className="hover:shadow-xl transition">
 						<CardContent className="p-6">
