@@ -1,8 +1,8 @@
 import fs from "fs"
 import path from "path"
 import matter from "gray-matter"
-import { remark } from "remark"
-import html from "remark-html"
+import { remark as _remark } from "remark"
+import _html from "remark-html"
 
 const contentDirectory = path.join(process.cwd(), "Content")
 

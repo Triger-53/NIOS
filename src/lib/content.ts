@@ -1,5 +1,5 @@
 // lib/content.ts
-import { cookies } from "next/headers"
+import { cookies as _cookies } from "next/headers"
 import { createClient } from "./supabase-server" // Corrected import path
 import fs from "fs"
 import path from "path"
