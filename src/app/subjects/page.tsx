@@ -6,10 +6,10 @@ export default function SubjectsPage() {
 	const subjects = getAllSubjects()
 
 	return (
-		<main className="min-h-screen p-6 md:p-12">
+		<main className="min-h-screen p-4 md:p-12">
 			<div className="max-w-6xl mx-auto">
 				<h1 className="text-3xl font-bold mb-8 text-center">All Subjects</h1>
-				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					{subjects.map((subj) => (
 						<Card key={subj.slug} className="hover:shadow-xl transition">
 							<CardContent className="p-6">
