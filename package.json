@@ -1,0 +1,49 @@
+{
+	"name": "nios-app",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "eslint",
+		"embed": "ts-node-esm scripts/embed-lessons.ts"
+	},
+	"dependencies": {
+		"@google/generative-ai": "^0.24.1",
+		"@radix-ui/react-slot": "^1.2.3",
+		"@supabase/auth-ui-react": "^0.4.7",
+		"@supabase/ssr": "^0.7.0",
+		"@supabase/supabase-js": "^2.76.1",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"github-markdown-css": "^5.8.1",
+		"gray-matter": "^4.0.3",
+		"lucide-react": "^0.544.0",
+		"next": "15.5.4",
+		"next-auth": "^4.24.11",
+		"pdf-parse": "^1.1.1",
+		"react": "19.1.0",
+		"react-dom": "19.1.0",
+		"react-markdown": "^10.1.0",
+		"rehype-raw": "^7.0.0",
+		"remark": "^15.0.1",
+		"remark-gfm": "^4.0.1",
+		"remark-html": "^16.0.1",
+		"tailwind-merge": "^3.3.1"
+	},
+	"devDependencies": {
+		"@eslint/eslintrc": "^3",
+		"@tailwindcss/postcss": "^4",
+		"@tailwindcss/typography": "^0.5.19",
+		"@types/node": "^20",
+		"@types/pdf-parse": "^1.1.4",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"eslint": "^9",
+		"eslint-config-next": "15.5.4",
+		"tailwindcss": "^4",
+		"ts-node": "^10.9.2",
+		"typescript": "^5"
+	}
+}
