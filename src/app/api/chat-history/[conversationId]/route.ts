@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { conversationId: string } }
+  context: { params: { conversationId: string } }
 ) {
   try {
     const supabase = createClient();
