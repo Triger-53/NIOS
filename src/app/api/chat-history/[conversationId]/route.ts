@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase-server';
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { conversationId: string } }
 ) {
   try {
