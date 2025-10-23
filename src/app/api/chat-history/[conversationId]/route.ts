@@ -4,8 +4,7 @@ import { createClient } from '@/lib/supabase-server';
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  _req: NextRequest,
-  context: { params: { conversationId: string } }
+  req: NextRequest
 ) {
   try {
     const supabase = createClient();
@@ -15,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { conversationId } = params;
+    const conversationId = req.nextUrl.pathname.split('/').pop();
 
     const { data: conversation, error } = await supabase
       .from('chat_conversations')
