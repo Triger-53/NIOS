@@ -4,11 +4,13 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const dynamic = 'force-dynamic';
 
-// Initialize the Google Generative AI client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured.' }, { status: 500 });
+    }
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
