@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-client';
 import { User } from '@supabase/supabase-js';
+import StyledMarkdown from '@/components/StyledMarkdown';
 
 // --- Type Definitions ---
 interface Message {
@@ -193,19 +194,23 @@ export default function PremiumChatPage() {
         <div className="flex-1 p-6 overflow-y-auto">
           {messages.map((msg, index) => (
             <div key={index} className={`my-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-              <div className={`inline-block p-4 rounded-lg ${msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-white shadow-md'}`}>
-                <p>{msg.content}</p>
+                <div className={`inline-block p-4 rounded-lg ${msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-white shadow-md'}`}>
+                {msg.role === 'assistant' ? (
+                    <StyledMarkdown content={msg.content} />
+                ) : (
+                    <p>{msg.content}</p>
+                )}
                 {msg.sources && msg.sources.length > 0 && (
-                  <div className="mt-4 pt-2 border-t border-gray-300">
+                    <div className="mt-4 pt-2 border-t border-gray-300">
                     <h4 className="font-semibold text-sm">Sources:</h4>
                     <ul className="text-xs list-disc list-inside">
-                      {msg.sources.map((source, idx) => (
+                        {msg.sources.map((source, idx) => (
                         <li key={idx}>Book: {source.title}, Page: {source.page}</li>
-                      ))}
+                        ))}
                     </ul>
-                  </div>
+                    </div>
                 )}
-              </div>
+                </div>
             </div>
           ))}
           {isLoading && <div className="text-center">Assistant is thinking...</div>}

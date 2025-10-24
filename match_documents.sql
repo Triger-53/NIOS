@@ -1,11 +1,11 @@
 -- Create a function to search for documents
 create function match_documents (
-  query_embedding vector(768),
+  match_count int,
   match_threshold float,
-  match_count int
+  query_embedding vector(768)
 )
 returns table (
-  id int,
+  id bigint,
   content text,
   book_title text,
   page_number int,
