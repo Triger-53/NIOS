@@ -16,18 +16,18 @@ export default function Navbar() {
 	}
 
 	return (
-		<header className="absolute top-0 left-0 w-full z-50">
-			<nav className="container bg-gray-800/70 backdrop-blur-sm max-w-7xl mx-auto px-6 py-3 mt-4 rounded-full shadow-md border border-gray-700 flex justify-between items-center">
-				<Link href="/" className="text-xl font-bold text-zinc-100">
+		<header className="w-full z-50 bg-gray-900/70 backdrop-blur-lg">
+			<nav className="container max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+				<Link href="/" className="text-xl font-bold text-white">
 					NIOS Class 10
 				</Link>
 
 				{/* Desktop Menu */}
-				<div className="hidden md:flex gap-6 text-zinc-300 text-sm font-semibold items-center">
-					<Link href="/" className="hover:text-zinc-100 transition-colors">Home</Link>
-					<Link href="/subjects" className="hover:text-zinc-100 transition-colors">Subjects</Link>
-					<Link href="/about" className="hover:text-zinc-100 transition-colors">About</Link>
-					<Link href="/contact" className="hover:text-zinc-100 transition-colors">Contact</Link>
+				<div className="hidden md:flex gap-6 text-gray-300 text-sm font-semibold items-center">
+					<Link href="/" className="hover:text-white transition-colors">Home</Link>
+					<Link href="/subjects" className="hover:text-white transition-colors">Subjects</Link>
+					<Link href="/about" className="hover:text-zinc-900 transition-colors">About</Link>
+					<Link href="/contact" className="hover:text-zinc-900 transition-colors">Contact</Link>
 
 					<Button asChild size="sm" className="rounded-full">
 						<Link href="/login">Login</Link>
