@@ -232,10 +232,10 @@ export default function PremiumChatPage() {
   }
 
   return (
-		<div className="flex h-[82.6vh] w-full bg-gray-100 text-gray-800 overflow-hidden">
+		<div className="flex h-screen w-full bg-gray-100 text-gray-800 overflow-hidden">
 			{/* Sidebar */}
 			<aside
-				className={`fixed top-0 left-0 h-full z-20 bg-gray-300 bg-gradient-to-t from-transparent to-white p-4 flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
+				className={`fixed top-0 left-0 h-full z-40 bg-gray-300 bg-gradient-to-t from-transparent to-white p-4 flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:z-auto ${
 					isSidebarOpen ? "translate-x-0" : "-translate-x-full"
 				} w-64 md:w-80 flex`}>
 				<div className="flex justify-between items-center mb-6">
@@ -277,7 +277,7 @@ export default function PremiumChatPage() {
 									<Menu.Button className="p-1 rounded-full hover:bg-gray-500/20">
 										<DotsVerticalIcon className="w-5 h-5" />
 									</Menu.Button>
-									<Menu.Items className="absolute right-0 w-40 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+									<Menu.Items className="absolute right-0 w-40 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-30">
 										<div className="px-1 py-1">
 											<Menu.Item>
 												{({ active }) => (
@@ -313,9 +313,14 @@ export default function PremiumChatPage() {
 					))}
 				</div>
 			</aside>
-
+			{isSidebarOpen && (
+				<div
+					className="fixed inset-0 bg-black/30 z-30 md:hidden"
+					onClick={() => setSidebarOpen(false)}
+				/>
+			)}
 			{/* Main Content */}
-			<main className="flex-1 flex flex-col h-[82.6vh] bg-gradient-to-t from-transparent to-white">
+			<main className="flex-1 flex flex-col h-full bg-gradient-to-t from-transparent to-white">
 				{/* Mobile Header */}
 				<header className="md:hidden flex items-center justify-between p-4 bg-white/70 backdrop-blur-lg border-b">
 					<button onClick={() => setSidebarOpen(!isSidebarOpen)}>
@@ -330,7 +335,7 @@ export default function PremiumChatPage() {
 				</header>
 
 				{/* Chat Messages */}
-				<div className="flex-1 p-6 overflow-y-auto">
+				<div className="flex-1 p-6 overflow-y-auto pb-24 [mask-image:linear-gradient(to_bottom,black_calc(100%-6rem),transparent)]">
 					<div className="max-w-4xl mx-auto">
 						{messages.length === 0 && !isLoading && (
 							<div className="flex flex-col items-center justify-center h-full text-gray-500">
@@ -385,26 +390,27 @@ export default function PremiumChatPage() {
 							</div>
 						)}
 					</div>
-					{/* User Input Form */}
-					<div className="p-4">
-						<div className="max-w-4xl mx-auto">
-							<form onSubmit={handleSubmit} className="flex items-center">
-								<input
-									type="text"
-									value={userInput}
-									onChange={(e) => setUserInput(e.target.value)}
-									placeholder="Ask your AI teacher a question..."
-									className="flex-1 p-3 border-2 bg-blue-50 backdrop-blur-lg rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
-									disabled={isLoading}
-								/>
-								<button
-									type="submit"
-									className="ml-3 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
-									disabled={isLoading || !userInput.trim()}>
-									<SendIcon className="w-5 h-5" />
-								</button>
-							</form>
-						</div>
+				</div>
+
+				{/* User Input Form */}
+				<div className="p-4">
+					<div className="max-w-4xl mx-auto">
+						<form onSubmit={handleSubmit} className="flex items-center">
+							<input
+								type="text"
+								value={userInput}
+								onChange={(e) => setUserInput(e.target.value)}
+								placeholder="Ask your AI teacher a question..."
+								className="flex-1 p-3 border-2 bg-blue-50 backdrop-blur-lg rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
+								disabled={isLoading}
+							/>
+							<button
+								type="submit"
+								className="ml-3 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
+								disabled={isLoading || !userInput.trim()}>
+								<SendIcon className="w-5 h-5" />
+							</button>
+						</form>
 					</div>
 				</div>
 			</main>
