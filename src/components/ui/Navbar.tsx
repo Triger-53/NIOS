@@ -17,7 +17,7 @@ export default function Navbar() {
 
 	return (
 		<header className="sticky top-0 w-full z-50">
-			<nav className="container bg-white/80 backdrop-blur-sm max-w-7xl mx-auto px-6 py-3 mt-4 rounded-full shadow-md border flex justify-between items-center">
+			<nav className="container bg-white/80 backdrop-blur-sm max-w-7xl mx-auto px-6 py-3 mt-3 rounded-full shadow-md border flex justify-between items-center">
 				<Link href="/" className="text-xl font-bold text-zinc-900">
 					NIOS Class 10
 				</Link>

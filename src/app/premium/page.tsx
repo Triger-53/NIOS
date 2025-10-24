@@ -232,186 +232,184 @@ export default function PremiumChatPage() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-gray-100 text-gray-800 overflow-hidden">
-      {/* Sidebar */}
-      <aside
-        className={`fixed top-0 left-0 h-full z-20 bg-white/70 backdrop-blur-lg p-4 flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } w-64 md:w-80 flex`}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">History</h2>
-          <button
-            onClick={handleNewConversation}
-            className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-          >
-            <PlusIcon className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="flex-grow overflow-y-auto -mr-2 pr-2">
-          {conversations.map(convo => (
-            <div
-              key={convo.id}
-              className={`group relative p-3 my-1.5 rounded-lg cursor-pointer transition-colors ${
-                activeConversationId === convo.id
-                  ? 'bg-blue-500 text-white'
-                  : 'hover:bg-gray-200'
-              }`}
-              onClick={() => editingConversationId !== convo.id && fetchConversationMessages(convo.id)}
-            >
-              {editingConversationId === convo.id ? (
-                <input
-                  type="text"
-                  value={editingTitle}
-                  onChange={(e) => setEditingTitle(e.target.value)}
-                  onBlur={handleUpdateTitle}
-                  onKeyDown={(e) => e.key === 'Enter' && handleUpdateTitle()}
-                  className="w-full bg-transparent border-b border-blue-300 focus:outline-none"
-                  autoFocus
-                />
-              ) : (
-                <p className="truncate">{convo.title}</p>
-              )}
-               <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Menu as="div" className="relative inline-block text-left">
-                  <Menu.Button className="p-1 rounded-full hover:bg-gray-500/20">
-                    <DotsVerticalIcon className="w-5 h-5" />
-                  </Menu.Button>
-                  <Menu.Items className="absolute right-0 w-40 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                    <div className="px-1 py-1">
-                      <Menu.Item>
-                        {({ active }) => (
-                          <button
-                            onClick={() => handleRename(convo)}
-                            className={`${
-                              active ? 'bg-blue-500 text-white' : 'text-gray-900'
-                            } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                          >
-                            <PencilIcon className="w-5 h-5 mr-2" />
-                            Rename
-                          </button>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <button
-                            onClick={() => handleDelete(convo.id)}
-                            className={`${
-                              active ? 'bg-red-500 text-white' : 'text-gray-900'
-                            } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
-                          >
-                            <TrashIcon className="w-5 h-5 mr-2" />
-                            Delete
-                          </button>
-                        )}
-                      </Menu.Item>
-                    </div>
-                  </Menu.Items>
-                </Menu>
-              </div>
-            </div>
-          ))}
-        </div>
-      </aside>
+		<div className="flex h-[82.6vh] w-full bg-gray-100 text-gray-800 overflow-hidden">
+			{/* Sidebar */}
+			<aside
+				className={`fixed top-0 left-0 h-full z-20 bg-gray-300 bg-gradient-to-t from-transparent to-white p-4 flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
+					isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+				} w-64 md:w-80 flex`}>
+				<div className="flex justify-between items-center mb-6">
+					<h2 className="text-2xl font-bold">History</h2>
+					<button
+						onClick={handleNewConversation}
+						className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors">
+						<PlusIcon className="w-5 h-5" />
+					</button>
+				</div>
+				<div className="flex-grow overflow-y-auto -mr-2 pr-2">
+					{conversations.map((convo) => (
+						<div
+							key={convo.id}
+							className={`group relative p-3 my-1.5 rounded-lg cursor-pointer transition-colors ${
+								activeConversationId === convo.id
+									? "bg-blue-500 text-white"
+									: "hover:bg-gray-200"
+							}`}
+							onClick={() =>
+								editingConversationId !== convo.id &&
+								fetchConversationMessages(convo.id)
+							}>
+							{editingConversationId === convo.id ? (
+								<input
+									type="text"
+									value={editingTitle}
+									onChange={(e) => setEditingTitle(e.target.value)}
+									onBlur={handleUpdateTitle}
+									onKeyDown={(e) => e.key === "Enter" && handleUpdateTitle()}
+									className="w-full bg-transparent border-b border-blue-300 focus:outline-none"
+									autoFocus
+								/>
+							) : (
+								<p className="truncate">{convo.title}</p>
+							)}
+							<div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+								<Menu as="div" className="relative inline-block text-left">
+									<Menu.Button className="p-1 rounded-full hover:bg-gray-500/20">
+										<DotsVerticalIcon className="w-5 h-5" />
+									</Menu.Button>
+									<Menu.Items className="absolute right-0 w-40 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+										<div className="px-1 py-1">
+											<Menu.Item>
+												{({ active }) => (
+													<button
+														onClick={() => handleRename(convo)}
+														className={`${
+															active
+																? "bg-blue-500 text-white"
+																: "text-gray-900"
+														} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
+														<PencilIcon className="w-5 h-5 mr-2" />
+														Rename
+													</button>
+												)}
+											</Menu.Item>
+											<Menu.Item>
+												{({ active }) => (
+													<button
+														onClick={() => handleDelete(convo.id)}
+														className={`${
+															active ? "bg-red-500 text-white" : "text-gray-900"
+														} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
+														<TrashIcon className="w-5 h-5 mr-2" />
+														Delete
+													</button>
+												)}
+											</Menu.Item>
+										</div>
+									</Menu.Items>
+								</Menu>
+							</div>
+						</div>
+					))}
+				</div>
+			</aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen">
-        {/* Mobile Header */}
-        <header className="md:hidden flex items-center justify-between p-4 bg-white/70 backdrop-blur-lg border-b">
-          <button onClick={() => setSidebarOpen(!isSidebarOpen)}>
-            <MenuIcon className="w-6 h-6" />
-          </button>
-          <h1 className="text-lg font-semibold truncate">
-            {activeConversationId
-              ? conversations.find(c => c.id === activeConversationId)?.title
-              : 'New Chat'}
-          </h1>
-          <div className="w-6" /> {/* Spacer */}
-        </header>
+			{/* Main Content */}
+			<main className="flex-1 flex flex-col h-[82.6vh] bg-gradient-to-t from-transparent to-white">
+				{/* Mobile Header */}
+				<header className="md:hidden flex items-center justify-between p-4 bg-white/70 backdrop-blur-lg border-b">
+					<button onClick={() => setSidebarOpen(!isSidebarOpen)}>
+						<MenuIcon className="w-6 h-6" />
+					</button>
+					<h1 className="text-lg font-semibold truncate">
+						{activeConversationId
+							? conversations.find((c) => c.id === activeConversationId)?.title
+							: "New Chat"}
+					</h1>
+					<div className="w-6" /> {/* Spacer */}
+				</header>
 
-        {/* Chat Messages */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-4xl mx-auto">
-            {messages.length === 0 && !isLoading && (
-                <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                    <SparklesIcon className="w-16 h-16 mb-4" />
-                    <h2 className="text-2xl font-semibold">Start a new conversation</h2>
-                    <p>Ask me anything about your subjects!</p>
-                </div>
-            )}
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`flex my-5 ${
-                  msg.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                <div
-                  className={`max-w-2xl p-4 rounded-2xl shadow-md ${
-                    msg.role === 'user'
-                      ? 'bg-blue-500 text-white rounded-br-none'
-                      : 'bg-white text-gray-800 rounded-bl-none'
-                  }`}
-                >
-                  {msg.role === 'assistant' ? (
-                    <StyledMarkdown content={msg.content} />
-                  ) : (
-                    <p>{msg.content}</p>
-                  )}
-                  {msg.sources && msg.sources.length > 0 && (
-                    <div className="mt-4 pt-3 border-t border-gray-300/50">
-                      <h4 className="font-semibold text-sm mb-1">Sources:</h4>
-                      <ul className="text-xs list-disc list-inside space-y-1">
-                        {msg.sources.map((source, idx) => (
-                          <li key={idx}>
-                            Book: {source.title}, Page: {source.page}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                  <div className="p-4 rounded-2xl shadow-md bg-white text-gray-800 rounded-bl-none">
-                      <div className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-75" />
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-150" />
-                      </div>
-                  </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* User Input Form */}
-        <div className="p-4 bg-white/70 backdrop-blur-lg border-t">
-          <div className="max-w-4xl mx-auto">
-            <form onSubmit={handleSubmit} className="flex items-center">
-              <input
-                type="text"
-                value={userInput}
-                onChange={e => setUserInput(e.target.value)}
-                placeholder="Ask your AI teacher a question..."
-                className="flex-1 p-3 border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
-                disabled={isLoading}
-              />
-              <button
-                type="submit"
-                className="ml-3 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
-                disabled={isLoading || !userInput.trim()}
-              >
-                <SendIcon className="w-5 h-5" />
-              </button>
-            </form>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
+				{/* Chat Messages */}
+				<div className="flex-1 p-6 overflow-y-auto">
+					<div className="max-w-4xl mx-auto">
+						{messages.length === 0 && !isLoading && (
+							<div className="flex flex-col items-center justify-center h-full text-gray-500">
+								<SparklesIcon className="w-16 h-16 mb-4" />
+								<h2 className="text-2xl font-semibold">
+									Start a new conversation
+								</h2>
+								<p>Ask me anything about your subjects!</p>
+							</div>
+						)}
+						{messages.map((msg, index) => (
+							<div
+								key={index}
+								className={`flex my-5 ${
+									msg.role === "user" ? "justify-end" : "justify-start"
+								}`}>
+								<div
+									className={`max-w-2xl p-4 rounded-2xl shadow-md ${
+										msg.role === "user"
+											? "bg-blue-500 text-white rounded-br-none"
+											: "bg-white text-gray-800 rounded-bl-none"
+									}`}>
+									{msg.role === "assistant" ? (
+										<StyledMarkdown content={msg.content} />
+									) : (
+										<p>{msg.content}</p>
+									)}
+									{msg.sources && msg.sources.length > 0 && (
+										<div className="mt-4 pt-3 border-t border-gray-300/50">
+											<h4 className="font-semibold text-sm mb-1">Sources:</h4>
+											<ul className="text-xs list-disc list-inside space-y-1">
+												{msg.sources.map((source, idx) => (
+													<li key={idx}>
+														Book: {source.title}, Page: {source.page}
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+								</div>
+							</div>
+						))}
+						{isLoading && (
+							<div className="flex justify-start">
+								<div className="p-4 rounded-2xl shadow-md bg-white text-gray-800 rounded-bl-none">
+									<div className="flex items-center space-x-2">
+										<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+										<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-75" />
+										<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-150" />
+									</div>
+								</div>
+							</div>
+						)}
+					</div>
+					{/* User Input Form */}
+					<div className="p-4">
+						<div className="max-w-4xl mx-auto">
+							<form onSubmit={handleSubmit} className="flex items-center">
+								<input
+									type="text"
+									value={userInput}
+									onChange={(e) => setUserInput(e.target.value)}
+									placeholder="Ask your AI teacher a question..."
+									className="flex-1 p-3 border-2 bg-blue-50 backdrop-blur-lg rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
+									disabled={isLoading}
+								/>
+								<button
+									type="submit"
+									className="ml-3 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
+									disabled={isLoading || !userInput.trim()}>
+									<SendIcon className="w-5 h-5" />
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</main>
+		</div>
+	)
 }
 
 // --- SVG Icons ---
