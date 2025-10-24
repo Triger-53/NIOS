@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { Menu } from '@headlessui/react';
 import { createClient } from '@/lib/supabase-client';
 import { User } from '@supabase/supabase-js';
 import StyledMarkdown from '@/components/StyledMarkdown';
@@ -26,7 +27,9 @@ export default function PremiumChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSidebarOpen, _setSidebarOpen] = useState(true);
+  const [isSidebarOpen, setSidebarOpen] = useState(false); // Default to closed on mobile
+  const [editingConversationId, setEditingConversationId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
 
   const supabase = createClient();
 
@@ -56,6 +59,20 @@ export default function PremiumChatPage() {
       fetchConversations();
     }
   }, [isPremium]);
+
+  // Sidebar visibility based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) { // Tailwind's `md` breakpoint
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+    handleResize(); // Set initial state
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // --- Data Fetching ---
   const fetchConversations = async () => {
@@ -88,6 +105,55 @@ export default function PremiumChatPage() {
     setActiveConversationId(null);
     setMessages([]);
     setUserInput('');
+  };
+
+  const handleRename = (convo: Conversation) => {
+    setEditingConversationId(convo.id);
+    setEditingTitle(convo.title);
+  };
+
+  const handleUpdateTitle = async () => {
+    if (!editingConversationId || !editingTitle.trim()) return;
+
+    try {
+      const response = await fetch(`/api/chat-history/${editingConversationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: editingTitle }),
+      });
+
+      if (response.ok) {
+        setConversations(
+          conversations.map(c =>
+            c.id === editingConversationId ? { ...c, title: editingTitle } : c
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Failed to update title:', error);
+    } finally {
+      setEditingConversationId(null);
+      setEditingTitle('');
+    }
+  };
+
+  const handleDelete = async (conversationId: string) => {
+    if (window.confirm('Are you sure you want to delete this chat?')) {
+      try {
+        const response = await fetch(`/api/chat-history/${conversationId}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          setConversations(conversations.filter(c => c.id !== conversationId));
+          if (activeConversationId === conversationId) {
+            handleNewConversation();
+          }
+        }
+      } catch (error) {
+        console.error('Failed to delete conversation:', error);
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,73 +232,241 @@ export default function PremiumChatPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-800">
+    <div className="flex h-screen w-full bg-gray-100 text-gray-800 overflow-hidden">
       {/* Sidebar */}
-      <aside className={`bg-gray-100 p-4 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-0'}`}>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">History</h2>
-          <button onClick={handleNewConversation} className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-            New Chat
+      <aside
+        className={`fixed top-0 left-0 h-full z-20 bg-white/70 backdrop-blur-lg p-4 flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } w-64 md:w-80 flex`}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">History</h2>
+          <button
+            onClick={handleNewConversation}
+            className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+          >
+            <PlusIcon className="w-5 h-5" />
           </button>
         </div>
-        <div className="flex-grow overflow-y-auto">
+        <div className="flex-grow overflow-y-auto -mr-2 pr-2">
           {conversations.map(convo => (
             <div
               key={convo.id}
-              onClick={() => fetchConversationMessages(convo.id)}
-              className={`p-2 my-1 rounded-md cursor-pointer ${activeConversationId === convo.id ? 'bg-blue-200' : 'hover:bg-gray-200'}`}
+              className={`group relative p-3 my-1.5 rounded-lg cursor-pointer transition-colors ${
+                activeConversationId === convo.id
+                  ? 'bg-blue-500 text-white'
+                  : 'hover:bg-gray-200'
+              }`}
+              onClick={() => editingConversationId !== convo.id && fetchConversationMessages(convo.id)}
             >
-              {convo.title}
+              {editingConversationId === convo.id ? (
+                <input
+                  type="text"
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                  onBlur={handleUpdateTitle}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUpdateTitle()}
+                  className="w-full bg-transparent border-b border-blue-300 focus:outline-none"
+                  autoFocus
+                />
+              ) : (
+                <p className="truncate">{convo.title}</p>
+              )}
+               <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Menu as="div" className="relative inline-block text-left">
+                  <Menu.Button className="p-1 rounded-full hover:bg-gray-500/20">
+                    <DotsVerticalIcon className="w-5 h-5" />
+                  </Menu.Button>
+                  <Menu.Items className="absolute right-0 w-40 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                    <div className="px-1 py-1">
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={() => handleRename(convo)}
+                            className={`${
+                              active ? 'bg-blue-500 text-white' : 'text-gray-900'
+                            } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                          >
+                            <PencilIcon className="w-5 h-5 mr-2" />
+                            Rename
+                          </button>
+                        )}
+                      </Menu.Item>
+                      <Menu.Item>
+                        {({ active }) => (
+                          <button
+                            onClick={() => handleDelete(convo.id)}
+                            className={`${
+                              active ? 'bg-red-500 text-white' : 'text-gray-900'
+                            } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                          >
+                            <TrashIcon className="w-5 h-5 mr-2" />
+                            Delete
+                          </button>
+                        )}
+                      </Menu.Item>
+                    </div>
+                  </Menu.Items>
+                </Menu>
+              </div>
             </div>
           ))}
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col h-screen">
+        {/* Mobile Header */}
+        <header className="md:hidden flex items-center justify-between p-4 bg-white/70 backdrop-blur-lg border-b">
+          <button onClick={() => setSidebarOpen(!isSidebarOpen)}>
+            <MenuIcon className="w-6 h-6" />
+          </button>
+          <h1 className="text-lg font-semibold truncate">
+            {activeConversationId
+              ? conversations.find(c => c.id === activeConversationId)?.title
+              : 'New Chat'}
+          </h1>
+          <div className="w-6" /> {/* Spacer */}
+        </header>
+
         {/* Chat Messages */}
         <div className="flex-1 p-6 overflow-y-auto">
-          {messages.map((msg, index) => (
-            <div key={index} className={`my-4 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
-                <div className={`inline-block p-4 rounded-lg ${msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-white shadow-md'}`}>
-                {msg.role === 'assistant' ? (
-                    <StyledMarkdown content={msg.content} />
-                ) : (
-                    <p>{msg.content}</p>
-                )}
-                {msg.sources && msg.sources.length > 0 && (
-                    <div className="mt-4 pt-2 border-t border-gray-300">
-                    <h4 className="font-semibold text-sm">Sources:</h4>
-                    <ul className="text-xs list-disc list-inside">
-                        {msg.sources.map((source, idx) => (
-                        <li key={idx}>Book: {source.title}, Page: {source.page}</li>
-                        ))}
-                    </ul>
-                    </div>
-                )}
+          <div className="max-w-4xl mx-auto">
+            {messages.length === 0 && !isLoading && (
+                <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                    <SparklesIcon className="w-16 h-16 mb-4" />
+                    <h2 className="text-2xl font-semibold">Start a new conversation</h2>
+                    <p>Ask me anything about your subjects!</p>
                 </div>
-            </div>
-          ))}
-          {isLoading && <div className="text-center">Assistant is thinking...</div>}
+            )}
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`flex my-5 ${
+                  msg.role === 'user' ? 'justify-end' : 'justify-start'
+                }`}
+              >
+                <div
+                  className={`max-w-2xl p-4 rounded-2xl shadow-md ${
+                    msg.role === 'user'
+                      ? 'bg-blue-500 text-white rounded-br-none'
+                      : 'bg-white text-gray-800 rounded-bl-none'
+                  }`}
+                >
+                  {msg.role === 'assistant' ? (
+                    <StyledMarkdown content={msg.content} />
+                  ) : (
+                    <p>{msg.content}</p>
+                  )}
+                  {msg.sources && msg.sources.length > 0 && (
+                    <div className="mt-4 pt-3 border-t border-gray-300/50">
+                      <h4 className="font-semibold text-sm mb-1">Sources:</h4>
+                      <ul className="text-xs list-disc list-inside space-y-1">
+                        {msg.sources.map((source, idx) => (
+                          <li key={idx}>
+                            Book: {source.title}, Page: {source.page}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                  <div className="p-4 rounded-2xl shadow-md bg-white text-gray-800 rounded-bl-none">
+                      <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-75" />
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-150" />
+                      </div>
+                  </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* User Input Form */}
-        <div className="p-4 bg-white border-t">
-          <form onSubmit={handleSubmit} className="flex">
-            <input
-              type="text"
-              value={userInput}
-              onChange={e => setUserInput(e.target.value)}
-              placeholder="Ask your AI teacher a question..."
-              className="flex-1 p-2 border rounded-l-md"
-              disabled={isLoading}
-            />
-            <button type="submit" className="p-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600" disabled={isLoading}>
-              Send
-            </button>
-          </form>
+        <div className="p-4 bg-white/70 backdrop-blur-lg border-t">
+          <div className="max-w-4xl mx-auto">
+            <form onSubmit={handleSubmit} className="flex items-center">
+              <input
+                type="text"
+                value={userInput}
+                onChange={e => setUserInput(e.target.value)}
+                placeholder="Ask your AI teacher a question..."
+                className="flex-1 p-3 border-gray-300 rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
+                disabled={isLoading}
+              />
+              <button
+                type="submit"
+                className="ml-3 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
+                disabled={isLoading || !userInput.trim()}
+              >
+                <SendIcon className="w-5 h-5" />
+              </button>
+            </form>
+          </div>
         </div>
       </main>
     </div>
+  );
+}
+
+// --- SVG Icons ---
+function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+    </svg>
+  );
+}
+
+function DotsVerticalIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+    </svg>
+  );
+}
+
+function PencilIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" />
+    </svg>
+  );
+}
+
+function TrashIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+  );
+}
+
+function MenuIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+    </svg>
+  );
+}
+
+function SendIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M19 3v4M17 5h4M12 3v18M3 12h18M5 21v-4M3 19h4M19 21v-4M17 19h4" />
+    </svg>
   );
 }
