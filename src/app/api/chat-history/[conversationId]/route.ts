@@ -40,8 +40,7 @@ export async function GET(
 }
 
 export async function PUT(
-  req: NextRequest,
-  { params }: { params: { conversationId: string } }
+  req: NextRequest
 ) {
   try {
     const supabase = createClient();
@@ -51,6 +50,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const conversationId = req.nextUrl.pathname.split('/').pop();
     const { title } = await req.json();
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -59,7 +59,7 @@ export async function PUT(
     const { error } = await supabase
       .from('chat_conversations')
       .update({ title })
-      .eq('id', params.conversationId)
+      .eq('id', conversationId)
       .eq('user_id', user.id);
 
     if (error) {
@@ -75,8 +75,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { conversationId: string } }
+  req: NextRequest
 ) {
   try {
     const supabase = createClient();
@@ -86,10 +85,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const conversationId = req.nextUrl.pathname.split('/').pop();
+
     const { error } = await supabase
       .from('chat_conversations')
       .delete()
-      .eq('id', params.conversationId)
+      .eq('id', conversationId)
       .eq('user_id', user.id);
 
     if (error) {
