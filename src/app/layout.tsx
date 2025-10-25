@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
 	title: "NIOS Class 10 in 1 Day",
 	description: "Master your NIOS course with free notes, fast!",
+	icons: [
+		{ rel: "icon", url: "/logo.ico", sizes: "any" },
+		{ rel: "icon", url: "/logo.svg", type: "image/svg+xml" },
+		{ rel: "apple-touch-icon", url: "/logo.png" },
+	],
 }
 
 export default function RootLayout({
@@ -26,7 +31,6 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en">
-     <link rel="icon" href="/logo.svg" />
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
 				<Navbar />
