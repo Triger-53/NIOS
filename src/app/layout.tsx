@@ -26,7 +26,7 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en">
-     <link rel="icon" href="/logo.png" />
+     <link rel="icon" href="/logo.svg" />
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}>
 				<Navbar />
