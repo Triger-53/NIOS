@@ -284,10 +284,11 @@ export default function PremiumChatPage() {
 									? "bg-blue-500 text-white"
 									: "hover:bg-gray-200"
 							}`}
-							onClick={() =>
-								editingConversationId !== convo.id &&
-								fetchConversationMessages(convo.id)
-							}>
+							onClick={() => {
+								if (editingConversationId !== convo.id) {
+									fetchConversationMessages(convo.id)
+								}
+							}}>
 							{editingConversationId === convo.id ? (
 								<input
 									type="text"
@@ -301,32 +302,28 @@ export default function PremiumChatPage() {
 							) : (
 								<div className="flex justify-between items-center">
 									<p className="truncate pr-2">{convo.title}</p>
-									<div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
+									<div
+										className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0"
+										onClick={(e) => e.stopPropagation()}>
 										<Menu
 											as="div"
-											key={convo.id + activeConversationId}
 											className="relative inline-block text-left">
-											<Menu.Button
-												onClick={(e) => e.stopPropagation()}
-												className="p-1 rounded-full hover:bg-gray-500/20">
+											<Menu.Button className="p-1 rounded-full hover:bg-gray-500/20">
 												<DotsVerticalIcon className="w-5 h-5" />
 											</Menu.Button>
 											<Menu.Items
 												anchor="bottom end"
-												className="w-40 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+												className="w-40 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
 												<div className="px-1 py-1">
 													<Menu.Item>
 														{({ active }) => (
 															<button
-																onClick={(e) => {
-																	e.stopPropagation()
-																	handleRename(convo)
-																}}
-																className={`${
+																onClick={() => handleRename(convo)}
+																className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${
 																	active
 																		? "bg-blue-500 text-white"
 																		: "text-gray-900"
-																} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
+																}`}>
 																<PencilIcon className="w-5 h-5 mr-2" />
 																Rename
 															</button>
@@ -335,15 +332,12 @@ export default function PremiumChatPage() {
 													<Menu.Item>
 														{({ active }) => (
 															<button
-																onClick={(e) => {
-																	e.stopPropagation()
-																	handleDelete(convo.id)
-																}}
-																className={`${
+																onClick={() => handleDelete(convo.id)}
+																className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${
 																	active
 																		? "bg-red-500 text-white"
 																		: "text-gray-900"
-																} group flex rounded-md items-center w-full px-2 py-2 text-sm`}>
+																}`}>
 																<TrashIcon className="w-5 h-5 mr-2" />
 																Delete
 															</button>
