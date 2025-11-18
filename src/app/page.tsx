@@ -27,8 +27,7 @@ export default async function HomePage() {
 					Master NIOS Class 10 in 1 Day (English Medium)
 				</h1>
 				<p className="text-md md:text-xl mb-6">
-					Free notes, practice papers, and guides for all major subjects —
-					powered by students, for students.
+					Free notes, advance chapter vise notes and mind maps, best AI teacher that helps learn and gives quizes and detailed notes on the go for all major subjects, all designed to help you ace your exams with ease and confidence.
 				</p>
 
 				{profile && (
