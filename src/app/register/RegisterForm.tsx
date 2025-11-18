@@ -52,30 +52,42 @@ export default function Register() {
 		<main className="max-w-md mx-auto p-8">
 			<h1 className="text-2xl font-bold mb-4">Create Your Account</h1>
 			<form onSubmit={handleRegister} className="space-y-4">
-				<input
-					type="text"
-					placeholder="Username"
-					required
-					value={username}
-					onChange={(e) => setUsername(e.target.value)}
-					className="w-full border p-2 rounded"
-				/>
-				<input
-					type="email"
-					placeholder="Email"
-					required
-					value={email}
-					onChange={(e) => setEmail(e.target.value)}
-					className="w-full border p-2 rounded"
-				/>
-				<input
-					type="password"
-					placeholder="Password"
-					required
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					className="w-full border p-2 rounded"
-				/>
+				<div>
+					<label htmlFor="username">Username</label>
+					<input
+						id="username"
+						type="text"
+						placeholder="Username"
+						required
+						value={username}
+						onChange={(e) => setUsername(e.target.value)}
+						className="w-full border p-2 rounded"
+					/>
+				</div>
+				<div>
+					<label htmlFor="email">Email</label>
+					<input
+						id="email"
+						type="email"
+						placeholder="Email"
+						required
+						value={email}
+						onChange={(e) => setEmail(e.target.value)}
+						className="w-full border p-2 rounded"
+					/>
+				</div>
+				<div>
+					<label htmlFor="password">Password</label>
+					<input
+						id="password"
+						type="password"
+						placeholder="Password"
+						required
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						className="w-full border p-2 rounded"
+					/>
+				</div>
 				<Button
 					type="submit"
 					className="w-full"

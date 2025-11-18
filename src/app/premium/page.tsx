@@ -4,6 +4,7 @@ import { Menu } from "@headlessui/react"
 import { createClient } from "@/lib/supabase-client"
 import { User } from "@supabase/supabase-js"
 import StyledMarkdown from "@/components/StyledMarkdown"
+import PurchaseButton from "@/components/PurchaseButton"
 
 // --- Type Definitions ---
 interface Message {
@@ -251,13 +252,20 @@ export default function PremiumChatPage() {
 	if (!isPremium) {
 		return (
 			<div className="flex flex-col justify-center items-center h-screen text-center">
-				<h1 className="text-3xl font-bold mb-4">Access Denied</h1>
-				<p>
-					This is a premium feature. Please upgrade your plan to access the AI
-					Teacher.
+				<h1 className="text-3xl font-bold mb-4">Access Premium Features</h1>
+				<p className="mb-8">
+					Upgrade to our Premium Plan to unlock the AI Teacher and other exclusive
+					content.
 				</p>
+				{_user && (
+					<PurchaseButton
+						plan="premium"
+						amount={parseInt(process.env.PREMIUM_PLAN_PRICE || "99900")}
+						userId={_user.id}
+					/>
+				)}
 			</div>
-		)
+		);
 	}
 
 	return (

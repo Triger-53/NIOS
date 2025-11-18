@@ -10,6 +10,7 @@ import {
 import { createClient } from "@/lib/supabase-server"
 import { redirect } from "next/navigation"
 import { Profile } from "@/types"
+import PurchaseButton from "@/components/PurchaseButton";
 
 const subjectMetadata: { [key: string]: { icon: string; desc: string } } = {
 	Accountancy: {
@@ -57,7 +58,19 @@ export default async function AdvanceNotesPage() {
 		.single<Profile>()
 
 	if (profile && profile.plan !== "advanced" && profile.plan !== "premium") {
-		redirect("/")
+		return (
+			<main className="min-h-screen p-8 flex flex-col items-center justify-center">
+				<h1 className="text-3xl font-bold mb-4">Get Access to Advance Notes</h1>
+				<p className="mb-8">
+					You need to purchase the Advanced Plan to view this content.
+				</p>
+				<PurchaseButton
+					plan="advanced"
+					amount={parseInt(process.env.ADVANCE_PLAN_PRICE || "49900")}
+					userId={user.id}
+				/>
+			</main>
+		);
 	}
 
 	const contentPath = path.join(process.cwd(), "Content", "Advanced")
