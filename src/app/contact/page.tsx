@@ -109,7 +109,7 @@ export default function ContactPage() {
 							value={message}
 							onChange={e => setMessage(e.target.value)}
 							className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-							placeholder="Tell us what's on your mind..."
+							placeholder="Tell us what&apos;s on your mind..."
 							required></textarea>
 					</div>
 					<button
@@ -120,7 +120,7 @@ export default function ContactPage() {
 					</button>
 					{submissionStatus === 'success' && (
 						<p className="text-green-600">
-							Message sent successfully! We'll get back to you soon.
+							Message sent successfully! We&apos;ll get back to you soon.
 						</p>
 					)}
 					{submissionStatus === 'error' && (
