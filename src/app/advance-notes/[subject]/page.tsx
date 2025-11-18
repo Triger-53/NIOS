@@ -3,8 +3,8 @@ import path from "path"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase-server"
-import { redirect } from "next/navigation"
 import { Profile } from "@/types"
+import PurchaseButton from "@/components/PurchaseButton"
 
 type PageProps = {
 	params: Promise<{
@@ -18,18 +18,26 @@ export default async function SubjectPage({ params }: PageProps) {
 		data: { user },
 	} = await supabase.auth.getUser()
 
-	if (!user) {
-		redirect("/register?plan=advanced")
-	}
-
 	const { data: profile } = await supabase
 		.from("profiles")
 		.select("*")
-		.eq("id", user.id)
+		.eq("id", user!.id)
 		.single<Profile>()
 
-	if (profile && profile.plan !== "advanced" && profile.plan !== "premium") {
-		redirect("/")
+	if (user && profile && profile.plan !== "advanced" && profile.plan !== "premium") {
+		return (
+			<main className="min-h-screen p-8 flex flex-col items-center justify-center">
+				<h1 className="text-3xl font-bold mb-4">Get Access to Advance Notes</h1>
+				<p className="mb-8">
+					You need to purchase the Advanced Plan to view this content.
+				</p>
+				<PurchaseButton
+					plan="advanced"
+					amount={parseInt(process.env.ADVANCE_PLAN_PRICE || "49900")}
+					userId={user.id}
+				/>
+			</main>
+		);
 	}
 
 	const { subject } = await params

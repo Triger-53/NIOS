@@ -2,10 +2,52 @@
 
 import Link from "next/link"
 import { Button } from "./button"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { createClient } from "@/lib/supabase-client"
+import { User } from "@supabase/supabase-js"
+import SignOut from "../SignOut"
+import { Profile } from "@/types"
 
 export default function Navbar() {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+	const [user, setUser] = useState<User | null>(null)
+	const [profile, setProfile] = useState<Profile | null>(null)
+	const supabase = createClient()
+
+	useEffect(() => {
+		const fetchUser = async () => {
+			const {
+				data: { user },
+			} = await supabase.auth.getUser()
+			setUser(user)
+
+			if (user) {
+				const { data: profile } = await supabase
+					.from("profiles")
+					.select("*")
+					.eq("id", user.id)
+					.single()
+				setProfile(profile)
+			}
+		}
+
+		fetchUser()
+
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange((_event, session) => {
+			setUser(session?.user ?? null)
+			if (session?.user) {
+				fetchUser()
+			} else {
+				setProfile(null)
+			}
+		})
+
+		return () => {
+			subscription.unsubscribe()
+		}
+	}, [supabase])
 
 	const toggleMobileMenu = () => {
 		setIsMobileMenuOpen(!isMobileMenuOpen)
@@ -14,6 +56,8 @@ export default function Navbar() {
 	const closeMobileMenu = () => {
 		setIsMobileMenuOpen(false)
 	}
+
+	const showAdvanceNotesLink = profile?.plan === "advanced" || profile?.plan === "premium"
 
 	return (
 		<header className="sticky top-0 w-full z-50">
@@ -26,12 +70,20 @@ export default function Navbar() {
 				<div className="hidden md:flex gap-6 text-zinc-700 text-sm font-semibold items-center">
 					<Link href="/" className="hover:text-zinc-900 transition-colors">Home</Link>
 					<Link href="/subjects" className="hover:text-zinc-900 transition-colors">Subjects</Link>
+					{showAdvanceNotesLink && (
+						<Link href="/advance-notes" className="hover:text-zinc-900 transition-colors">Advance Notes</Link>
+					)}
+					<Link href="/premium" className="hover:text-zinc-900 transition-colors">Premium</Link>
 					<Link href="/about" className="hover:text-zinc-900 transition-colors">About</Link>
 					<Link href="/contact" className="hover:text-zinc-900 transition-colors">Contact</Link>
 					
-					<Button asChild size="sm" className="rounded-full">
-						<Link href="/login">Login</Link>
-					</Button>
+					{user ? (
+						<SignOut />
+					) : (
+						<Button asChild size="sm" className="rounded-full">
+							<Link href="/login">Login</Link>
+						</Button>
+					)}
 				</div>
 
 				{/* Mobile Menu Button */}
@@ -56,12 +108,20 @@ export default function Navbar() {
 					<div className="flex flex-col gap-4 text-zinc-700 text-sm font-semibold">
 						<Link href="/" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>Home</Link>
 						<Link href="/subjects" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>Subjects</Link>
+						{showAdvanceNotesLink && (
+							<Link href="/advance-notes" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>Advance Notes</Link>
+						)}
+						<Link href="/premium" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>Premium</Link>
 						<Link href="/about" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>About</Link>
 						<Link href="/contact" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>Contact</Link>
 
-						<Button asChild size="sm" className="rounded-full">
-							<Link href="/login" onClick={closeMobileMenu}>Login</Link>
-						</Button>
+						{user ? (
+							<SignOut />
+						) : (
+							<Button asChild size="sm" className="rounded-full">
+								<Link href="/login" onClick={closeMobileMenu}>Login</Link>
+							</Button>
+						)}
 					</div>
 				</div>
 			)}

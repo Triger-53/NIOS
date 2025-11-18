@@ -18,6 +18,8 @@ export default async function HomePage() {
 		? await supabase.from("profiles").select("*").eq("id", user.id).single()
 		: { data: null }
 
+	const plan = profile?.plan || "free"
+
 	return (
 		<div className="min-h-screen bg-white p-4 md:p-12 text-gray-900">
 			<section className="text-center max-w-4xl mx-auto mb-12">
@@ -40,32 +42,45 @@ export default async function HomePage() {
 						<Link href="/subjects">📘 Start Learning</Link>
 					</Button>
 
-					{user ? (
-						<>
-							{profile?.plan === "advanced" && (
-								<Button size="lg" variant="outline" asChild>
-									<Link href="/advance-notes">📗 My Advance Notes</Link>
-								</Button>
-							)}
-							{profile?.plan === "premium" && (
-								<Button size="lg" variant="outline" asChild>
-									<Link href="/premium">🪙 My Premium Pass</Link>
-								</Button>
-							)}
-							<SignOut />
-						</>
-					) : (
+					{plan === "free" && (
 						<>
 							<Button size="lg" variant="outline" asChild>
-								<Link href="/advance-notes">📗 Get Advance Notes</Link>
+								<Link href="/advance-notes">📗 Get Advance Pass</Link>
 							</Button>
 							<Button size="lg" variant="outline" asChild>
 								<Link href="/premium">🪙 Get Premium Pass</Link>
 							</Button>
-							<Button size="lg" variant="ghost" asChild>
-								<Link href="/login">🔐 Login</Link>
+						</>
+					)}
+
+					{plan === "advanced" && (
+						<>
+							<Button size="lg" variant="outline" asChild>
+								<Link href="/advance-notes">📗 View Advance Notes</Link>
+							</Button>
+							<Button size="lg" variant="outline" asChild>
+								<Link href="/premium">🪙 Get Premium Pass</Link>
 							</Button>
 						</>
+					)}
+
+					{plan === "premium" && (
+						<>
+							<Button size="lg" variant="outline" asChild>
+								<Link href="/advance-notes">📗 View Advance Notes</Link>
+							</Button>
+							<Button size="lg" variant="outline" asChild>
+								<Link href="/premium">🪙 View Premium Pass</Link>
+							</Button>
+						</>
+					)}
+
+					{user ? (
+						<SignOut />
+					) : (
+						<Button size="lg" variant="ghost" asChild>
+							<Link href="/login">🔐 Login</Link>
+						</Button>
 					)}
 				</div>
 			</section>

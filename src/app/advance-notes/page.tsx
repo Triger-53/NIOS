@@ -8,7 +8,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase-server"
-import { redirect } from "next/navigation"
+
 import { Profile } from "@/types"
 import PurchaseButton from "@/components/PurchaseButton";
 
@@ -47,17 +47,13 @@ export default async function AdvanceNotesPage() {
 		data: { user },
 	} = await supabase.auth.getUser()
 
-	if (!user) {
-		redirect("/register?plan=advanced")
-	}
-
 	const { data: profile } = await supabase
 		.from("profiles")
 		.select("*")
-		.eq("id", user.id)
+		.eq("id", user!.id)
 		.single<Profile>()
 
-	if (profile && profile.plan !== "advanced" && profile.plan !== "premium") {
+	if (user && profile && profile.plan !== "advanced" && profile.plan !== "premium") {
 		return (
 			<main className="min-h-screen p-8 flex flex-col items-center justify-center">
 				<h1 className="text-3xl font-bold mb-4">Get Access to Advance Notes</h1>

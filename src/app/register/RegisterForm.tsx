@@ -1,27 +1,18 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase-client"
 import { Button } from "@/components/ui/button"
 
 export default function Register() {
 	const router = useRouter()
-	const searchParams = useSearchParams()
-	const [plan, setPlan] = useState("")
 	const [email, setEmail] = useState("")
 	const [password, setPassword] = useState("")
 	const [username, setUsername] = useState("")
 	const [status, setStatus] = useState("")
 	const [loading, setLoading] = useState(false)
 	const supabase = createClient()
-
-	useEffect(() => {
-		const planFromParams = searchParams.get("plan")
-		if (planFromParams) {
-			setPlan(planFromParams)
-		}
-	}, [searchParams])
 
 	const handleRegister = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -34,7 +25,6 @@ export default function Register() {
 			options: {
 				data: {
 					username,
-					plan,
 				},
 			},
 		})
