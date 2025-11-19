@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     }
     console.log('[/api/ask-teacher] User has premium plan');
 
-    const { question } = await req.json();
+    const { question, history, summary } = await req.json();
 
     if (!question) {
       console.log('[/api/ask-teacher] Bad request: No question provided');
@@ -94,8 +94,27 @@ export async function POST(req: NextRequest) {
       "If the information to answer the question is not available, politely state that you cannot answer that question without providing a reason. " +
       "Always structure your answer clearly and concisely.";
 
+    const history_string =
+      history && history.length > 0
+        ? "--- CHAT HISTORY ---\n" +
+          history
+            .map((msg: { role: string; content: string }) =>
+              msg.role === "user"
+                ? `Student: ${msg.content}`
+                : `Teacher: ${msg.content}`
+            )
+            .join("\n") +
+          "\n\n"
+        : "";
+
+    const summary_string = summary
+      ? `--- PREVIOUSLY SUMMARIZED CHAT ---\n${summary}\n\n`
+      : "";
+
     const augmented_prompt =
       `${system_instruction}\n\n` +
+      `${summary_string}` +
+      `${history_string}` +
       `--- CONTEXT ---\n` +
       `${context}\n\n` +
       `--- STUDENT QUESTION ---\n` +

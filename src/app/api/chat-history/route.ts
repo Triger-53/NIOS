@@ -52,13 +52,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Requires premium plan' }, { status: 403 });
     }
 
-    const { conversationId, messages, title } = await req.json();
+    const { conversationId, messages, title, summary } = await req.json();
 
     if (conversationId) {
       // Update existing conversation
       const { data, error } = await supabase
         .from('chat_conversations')
-        .update({ messages })
+        .update({ messages, summary })
         .eq('id', conversationId)
         .eq('user_id', user.id)
         .select('id')
@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
           user_id: user.id,
           title: title,
           messages,
+          summary,
         })
         .select('id')
         .single();

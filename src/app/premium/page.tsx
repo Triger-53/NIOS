@@ -35,6 +35,7 @@ export default function PremiumChatPage() {
 		string | null
 	>(null)
 	const [editingTitle, setEditingTitle] = useState("")
+	const [summary, setSummary] = useState<string | null>(null)
 
 	const supabase = createClient()
 
@@ -101,7 +102,8 @@ export default function PremiumChatPage() {
 			const response = await fetch(`/api/chat-history/${conversationId}`)
 			if (response.ok) {
 				const data = await response.json()
-				setMessages(data.messages)
+				setMessages(data.messages || [])
+				setSummary(data.summary || null)
 			}
 		} catch (error) {
 			console.error("Failed to fetch messages:", error)
@@ -180,10 +182,15 @@ export default function PremiumChatPage() {
 
 		try {
 			// Send question to AI Teacher API
+			const historyToSend = summary ? messages.slice(messages.length - (messages.length % 10)) : messages
 			const aiResponse = await fetch("/api/ask-teacher", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ question: userInput }),
+				body: JSON.stringify({
+					question: userInput,
+					history: historyToSend,
+					summary: summary,
+				}),
 			})
 
 			if (!aiResponse.ok) {
@@ -199,6 +206,20 @@ export default function PremiumChatPage() {
 			const updatedMessages = [...newMessages, assistantMessage]
 			setMessages(updatedMessages)
 
+			// Summarization logic
+			let newSummary = summary;
+			if (updatedMessages.length > 0 && updatedMessages.length % 10 === 0) {
+				const toSummarize = updatedMessages.slice(-10)
+				const summarizeResponse = await fetch("/api/summarize", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ messages: toSummarize }),
+				})
+				const summaryData = await summarizeResponse.json()
+				newSummary = (summary ? summary + "\n" : "") + summaryData.summary
+				setSummary(newSummary)
+			}
+
 			// Save conversation to database
 			let conversationIdToSave = activeConversationId
 			if (!conversationIdToSave) {
@@ -210,6 +231,7 @@ export default function PremiumChatPage() {
 					body: JSON.stringify({
 						title: firstTitle,
 						messages: updatedMessages,
+						summary: newSummary,
 					}),
 				})
 				const savedData = await saveResponse.json()
@@ -224,6 +246,7 @@ export default function PremiumChatPage() {
 					body: JSON.stringify({
 						conversationId: conversationIdToSave,
 						messages: updatedMessages,
+						summary: newSummary,
 					}),
 				})
 			}
