@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     console.log('[/api/ask-teacher] Classifying user intent...');
     const classificationModel = genAI.getGenerativeModel({
       model: 'gemini-1.5-flash',
-      generationConfig: { response_mime_type: 'application/json' },
+      generationConfig: { responseMimeType: 'application/json' },
     });
     const classification_prompt = `
       You are an expert at classifying user intent. Please classify the following user question into one of three categories:
