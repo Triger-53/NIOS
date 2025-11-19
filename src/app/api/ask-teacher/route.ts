@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
       "Answer the student's question based on your knowledge. Your knowledge is derived from the context provided below. " +
       "Do not mention the context or that your knowledge is limited. Speak as if you know this information innately. " +
       "If the information to answer the question is not available, politely state that you cannot answer that question without providing a reason. " +
-      "Always structure your answer clearly and concisely.";
+      "Always structure your answer clearly.";
 
     const history_string =
       history && history.length > 0
