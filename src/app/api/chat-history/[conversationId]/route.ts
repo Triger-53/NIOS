@@ -18,7 +18,7 @@ export async function GET(
 
     const { data: conversation, error } = await supabase
       .from('chat_conversations')
-      .select('messages')
+      .select('messages, summary')
       .eq('id', conversationId)
       .eq('user_id', user.id)
       .single();
