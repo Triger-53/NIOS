@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Menu } from "@headlessui/react"
 import { createClient } from "@/lib/supabase-client"
 import { User } from "@supabase/supabase-js"
@@ -15,6 +15,9 @@ import {
 	Send,
 	Sparkles,
 	Loader,
+	Paperclip,
+	File as FileIcon,
+	X,
 } from "lucide-react"
 
 // --- Type Definitions ---
@@ -22,11 +25,19 @@ interface Message {
 	role: "user" | "assistant"
 	content: string
 	sources?: { title: string; page: number }[]
+	attachments?: { name: string; content: string }[]
 }
 
 interface Conversation {
 	id: string
 	title: string
+}
+
+interface AttachedFile {
+	file: File
+	status: "processing" | "completed" | "error"
+	extractedText?: string
+	error?: string
 }
 
 // --- Main Chat Component ---
@@ -47,6 +58,10 @@ export default function PremiumChatPage() {
 	>(null)
 	const [editingTitle, setEditingTitle] = useState("")
 	const [summary, setSummary] = useState<string | null>(null)
+	const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
+	const fileInputRef = useRef<HTMLInputElement>(null)
+
+	const isUploading = attachedFiles.some((f) => f.status === "processing")
 
 	const supabase = createClient()
 
@@ -180,18 +195,132 @@ export default function PremiumChatPage() {
 		}
 	}
 
+	const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const selectedFiles = Array.from(e.target.files || [])
+		if (attachedFiles.length + selectedFiles.length > 10) {
+			alert("You can upload a maximum of 10 files.")
+			return
+		}
+
+		const newFiles: AttachedFile[] = selectedFiles.map((file) => ({
+			file,
+			status: "processing",
+		}))
+		setAttachedFiles((prev) => [...prev, ...newFiles])
+
+		newFiles.forEach(async (newFile, index) => {
+			const { file } = newFile
+			// Basic validation
+			if (file.size > 100 * 1024 * 1024) {
+				setAttachedFiles((prev) =>
+					prev.map((f) =>
+						f.file === file
+							? { ...f, status: "error", error: "File too large" }
+							: f
+					)
+				)
+				return
+			}
+			const allowedTypes = [
+				"image/png",
+				"image/jpeg",
+				"application/pdf",
+				"text/plain",
+				"audio/mpeg",
+				"audio/wav",
+			]
+			if (!allowedTypes.includes(file.type)) {
+				setAttachedFiles((prev) =>
+					prev.map((f) =>
+						f.file === file
+							? { ...f, status: "error", error: "Unsupported type" }
+							: f
+					)
+				)
+				return
+			}
+
+			// Process the file
+			try {
+				const formData = new FormData()
+				formData.append("file", file)
+				const response = await fetch("/api/process-media", {
+					method: "POST",
+					body: formData,
+				})
+
+				if (!response.ok) {
+					throw new Error("Failed to process file")
+				}
+				const data = await response.json()
+				setAttachedFiles((prev) =>
+					prev.map((f) =>
+						f.file === file
+							? {
+									...f,
+									status: "completed",
+									extractedText: data.text,
+							  }
+							: f
+					)
+				)
+			} catch (error) {
+				setAttachedFiles((prev) =>
+					prev.map((f) =>
+						f.file === file
+							? { ...f, status: "error", error: "Processing failed" }
+							: f
+					)
+				)
+			}
+		})
+
+		// Clear the file input
+		if (fileInputRef.current) {
+			fileInputRef.current.value = ""
+		}
+	}
+
+	const removeFile = (fileToRemove: File) => {
+		setAttachedFiles((prev) => prev.filter((f) => f.file !== fileToRemove))
+	}
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
-		if (!userInput.trim() || isLoading) return
+		if (
+			!userInput.trim() ||
+			isLoading ||
+			isUploading ||
+			(attachedFiles.length > 0 &&
+				attachedFiles.some((f) => f.status !== "completed"))
+		)
+			return
 
-		const newMessages: Message[] = [
-			...messages,
-			{ role: "user", content: userInput },
-		]
+		const attachmentsForHistory = attachedFiles.map((f) => ({
+			name: f.file.name,
+			content: f.extractedText || "",
+		}))
+
+		const userMessage: Message = {
+			role: "user",
+			content: userInput,
+			attachments: attachmentsForHistory,
+		}
+
+		const newMessages: Message[] = [...messages, userMessage]
 		setMessages(newMessages)
 		setIsLoading(true)
 
 		try {
+			// Prepend extracted text to the user's question for the RAG
+			const mediaContext = attachedFiles
+				.map((file) => file.extractedText)
+				.join("\n\n---\n\n")
+
+			const questionWithContext = mediaContext
+				? `${mediaContext}\n\n---\n\nUser Question: ${userInput}`
+				: userInput
+
 			// Send question to AI Teacher API
 			const historyToSend = summary
 				? messages.slice(messages.length - (messages.length % 10))
@@ -200,7 +329,7 @@ export default function PremiumChatPage() {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					question: userInput,
+					question: questionWithContext,
 					history: historyToSend,
 					summary: summary,
 				}),
@@ -273,6 +402,7 @@ export default function PremiumChatPage() {
 		} finally {
 			setIsLoading(false)
 			setUserInput("")
+			setAttachedFiles([])
 		}
 	}
 
@@ -448,10 +578,24 @@ export default function PremiumChatPage() {
 									{msg.role === "assistant" ? (
 										<StyledMarkdown content={msg.content} />
 									) : (
-										<p>{msg.content}</p>
+										<>
+											{msg.attachments && msg.attachments.length > 0 && (
+												<div className="flex flex-wrap gap-2 mb-2">
+													{msg.attachments.map((att, idx) => (
+														<div
+															key={idx}
+															className="flex items-center bg-blue-400/80 rounded-lg px-2 py-1 text-sm">
+															<FileIcon className="w-4 h-4 mr-2" />
+															<span>{att.name}</span>
+														</div>
+													))}
+												</div>
+											)}
+											<p>{msg.content}</p>
+										</>
 									)}
 									{msg.sources && msg.sources.length > 0 && (
-										<div className="mt-4 pt-3 border-t border-gray-300/50">
+										<div className="mt-4 pt-3 border-t border-blue-400/50">
 											<h4 className="font-semibold text-sm mb-1">Sources:</h4>
 											<ul className="text-xs list-disc list-inside space-y-1">
 												{msg.sources.map((source, idx) => (
@@ -488,21 +632,70 @@ export default function PremiumChatPage() {
 				{/* User Input Form */}
 				<div className="p-4 bg-gradient-to-t from-white/50 to-transparent">
 					<div className="max-w-4xl mx-auto">
+						{/* Attached Files Display */}
+						<div className="flex flex-wrap gap-2 mb-2">
+							{attachedFiles.map((file, index) => (
+								<div
+									key={index}
+									className="flex items-center bg-gray-200 rounded-lg pl-2 pr-1 py-1 text-sm">
+									<FileIcon className="w-4 h-4 mr-2 text-gray-600" />
+									<span className="truncate max-w-xs">{file.file.name}</span>
+									{file.status === "processing" && (
+										<Loader className="w-4 h-4 ml-2 animate-spin" />
+									)}
+									{file.status === "error" && (
+										<span className="text-red-500 ml-2 text-xs">
+											{file.error}
+										</span>
+									)}
+									<button
+										onClick={() => removeFile(file.file)}
+										className="ml-1 p-0.5 rounded-full hover:bg-gray-300">
+										<X className="w-3 h-3" />
+									</button>
+								</div>
+							))}
+						</div>
 						<form
 							onSubmit={handleSubmit}
 							className="flex items-center bg-white rounded-full shadow-md border border-gray-200">
+							<input
+								type="file"
+								ref={fileInputRef}
+								multiple
+								onChange={handleFileChange}
+								className="hidden"
+								accept="image/png,image/jpeg,application/pdf,text/plain,audio/mpeg,audio/wav"
+							/>
+							<button
+								type="button"
+								onClick={() => fileInputRef.current?.click()}
+								disabled={isUploading}
+								className="m-1.5 p-3 text-gray-500 rounded-full hover:bg-gray-100 disabled:opacity-50 transition-all duration-200">
+								{isUploading ? (
+									<Loader className="w-5 h-5 animate-spin" />
+								) : (
+									<Paperclip className="w-5 h-5" />
+								)}
+							</button>
 							<input
 								type="text"
 								value={userInput}
 								onChange={(e) => setUserInput(e.target.value)}
 								placeholder="Ask your AI teacher a question..."
-								className="flex-1 p-4 bg-transparent rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
-								disabled={isLoading}
+								className="flex-1 p-4 bg-transparent focus:ring-0 focus:outline-none"
+								disabled={isLoading || isUploading}
 							/>
 							<button
 								type="submit"
 								className="m-1.5 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
-								disabled={isLoading || !userInput.trim()}>
+								disabled={
+									isLoading ||
+									isUploading ||
+									!userInput.trim() ||
+									(attachedFiles.length > 0 &&
+										attachedFiles.some((f) => f.status !== "completed"))
+								}>
 								<Send className="w-5 h-5" />
 							</button>
 						</form>
