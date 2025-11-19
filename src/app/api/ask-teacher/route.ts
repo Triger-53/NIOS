@@ -107,12 +107,24 @@ export async function POST(req: NextRequest) {
       console.log('[/api/ask-teacher] No relevant chunks found');
       if (intent === 'contextual_query') {
         console.log('[/api/ask-teacher] Handling contextual query with no new context...');
+        const history_string =
+          history && history.length > 0
+            ? "--- CHAT HISTORY ---\n" +
+              history
+                .map((msg: { role: string; content: string }) =>
+                  msg.role === "user"
+                    ? `Student: ${msg.content}`
+                    : `Teacher: ${msg.content}`
+                )
+                .join("\n") +
+              "\n\n"
+            : "";
         const contextualModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         const contextual_prompt = `
           You are a helpful NIOS teacher. The user has asked a question about the current conversation, but there is no new information in the NIOS books to answer it. Please answer the user's question based on the provided chat history and summary.
 
           Chat History:
-          ${history}
+          ${history_string}
 
           Summary:
           ${summary}
