@@ -5,6 +5,17 @@ import { createClient } from "@/lib/supabase-client"
 import { User } from "@supabase/supabase-js"
 import StyledMarkdown from "@/components/StyledMarkdown"
 import PurchaseButton from "@/components/PurchaseButton"
+import {
+	Plus,
+	MessageSquare,
+	MoreVertical,
+	Pencil,
+	Trash2,
+	Menu as MenuIcon,
+	Send,
+	Sparkles,
+	Loader,
+} from "lucide-react"
 
 // --- Type Definitions ---
 interface Message {
@@ -182,7 +193,9 @@ export default function PremiumChatPage() {
 
 		try {
 			// Send question to AI Teacher API
-			const historyToSend = summary ? messages.slice(messages.length - (messages.length % 10)) : messages
+			const historyToSend = summary
+				? messages.slice(messages.length - (messages.length % 10))
+				: messages
 			const aiResponse = await fetch("/api/ask-teacher", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -207,7 +220,7 @@ export default function PremiumChatPage() {
 			setMessages(updatedMessages)
 
 			// Summarization logic
-			let newSummary = summary;
+			let newSummary = summary
 			if (updatedMessages.length > 0 && updatedMessages.length % 10 === 0) {
 				const toSummarize = updatedMessages.slice(-10)
 				const summarizeResponse = await fetch("/api/summarize", {
@@ -266,60 +279,67 @@ export default function PremiumChatPage() {
 	// --- Render Logic ---
 	if (isPremium === null) {
 		return (
-			<div className="flex justify-center items-center h-screen">
-				Loading...
+			<div className="flex justify-center items-center h-screen bg-gray-50">
+				<Loader className="w-8 h-8 animate-spin text-blue-500" />
+				<p className="ml-4 text-lg text-gray-600">Loading your experience...</p>
 			</div>
 		)
 	}
 
 	if (!isPremium) {
 		return (
-			<div className="flex flex-col justify-center items-center h-screen text-center">
-				<h1 className="text-3xl font-bold mb-4">Access Premium Features</h1>
-				<p className="mb-8">
-					Upgrade to our Premium Plan to unlock the AI Teacher and other exclusive
-					content.
-				</p>
-				{_user && (
-					<PurchaseButton
-						plan="premium"
-						amount={parseInt(process.env.PREMIUM_PLAN_PRICE || "99900")}
-						userId={_user.id}
-					/>
-				)}
+			<div className="flex flex-col justify-center items-center h-screen text-center bg-gray-50 p-4">
+				<div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg">
+					<Sparkles className="w-16 h-16 mx-auto text-blue-500 mb-4" />
+					<h1 className="text-3xl font-bold text-gray-800 mb-2">
+						Unlock Your AI Teacher
+					</h1>
+					<p className="text-gray-600 mb-8">
+						Upgrade to Premium to get personalized help, ask questions, and get
+						deeper insights into your subjects.
+					</p>
+					{_user && (
+						<PurchaseButton
+							plan="premium"
+							amount={parseInt(process.env.PREMIUM_PLAN_PRICE || "99900")}
+							userId={_user.id}
+						/>
+					)}
+				</div>
 			</div>
-		);
+		)
 	}
 
 	return (
-		<div className="flex h-[82.1vh] w-full bg-gray-100 text-gray-800 overflow-hidden">
+		<div className="flex h-[82.1vh] w-full bg-gray-50 text-gray-800 overflow-hidden">
 			{/* Sidebar */}
 			<aside
-				className={`fixed top-0 left-0 h-full z-40 bg-gray-300 bg-gradient-to-t from-transparent to-white p-4 flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:z-auto ${
+				className={`fixed top-0 left-0 h-full z-40 bg-white/80 backdrop-blur-md border-r border-gray-200 p-4 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:z-auto ${
 					isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-				} w-64 md:w-80 pt-[10vh] bg-gradient-to-t from-transparent to-gray-300 flex`}>
+				} w-72 md:w-80 pt-[10vh] flex`}>
 				<div className="flex justify-between items-center mb-6">
-					<h2 className="text-2xl font-bold">History</h2>
+					<h2 className="text-2xl font-bold text-gray-800">History</h2>
 					<button
 						onClick={handleNewConversation}
-						className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors">
-						<PlusIcon className="w-5 h-5" />
+						className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all duration-200 shadow-md hover:shadow-lg">
+						<Plus className="w-5 h-5" />
 					</button>
 				</div>
-				<div className="flex-grow overflow-y-auto -mr-2 pr-2">
+				<div className="flex-grow overflow-y-auto -mr-2 pr-2 space-y-2">
 					{conversations.map((convo) => (
 						<div
 							key={convo.id}
-							className={`group relative p-3 my-1.5 rounded-lg cursor-pointer transition-colors hover:z-40 ${
+							className={`group relative flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 ${
 								activeConversationId === convo.id
-									? "bg-blue-500 text-white"
-									: "hover:bg-gray-200"
+									? "bg-blue-500 text-white shadow-md"
+									: "hover:bg-gray-100"
 							}`}
 							onClick={() => {
 								if (editingConversationId !== convo.id) {
 									fetchConversationMessages(convo.id)
 								}
 							}}>
+							<MessageSquare className="w-5 h-5 mr-3 flex-shrink-0" />
 							{editingConversationId === convo.id ? (
 								<input
 									type="text"
@@ -331,55 +351,51 @@ export default function PremiumChatPage() {
 									autoFocus
 								/>
 							) : (
-								<div className="flex justify-between items-center">
-									<p className="truncate pr-2">{convo.title}</p>
-									<div
-										className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0"
-										onClick={(e) => e.stopPropagation()}>
-										<Menu
-											as="div"
-											className="relative inline-block text-left">
-											<Menu.Button className="p-1 rounded-full hover:bg-gray-500/20">
-												<DotsVerticalIcon className="w-5 h-5" />
-											</Menu.Button>
-											<Menu.Items
-												anchor="bottom end"
-												className="w-40 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-												<div className="px-1 py-1">
-													<Menu.Item>
-														{({ active }) => (
-															<button
-																onClick={() => handleRename(convo)}
-																className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${
-																	active
-																		? "bg-blue-500 text-white"
-																		: "text-gray-900"
-																}`}>
-																<PencilIcon className="w-5 h-5 mr-2" />
-																Rename
-															</button>
-														)}
-													</Menu.Item>
-													<Menu.Item>
-														{({ active }) => (
-															<button
-																onClick={() => handleDelete(convo.id)}
-																className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${
-																	active
-																		? "bg-red-500 text-white"
-																		: "text-gray-900"
-																}`}>
-																<TrashIcon className="w-5 h-5 mr-2" />
-																Delete
-															</button>
-														)}
-													</Menu.Item>
-												</div>
-											</Menu.Items>
-										</Menu>
-									</div>
-								</div>
+								<p className="truncate pr-2 flex-grow">{convo.title}</p>
 							)}
+							<div
+								className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0"
+								onClick={(e) => e.stopPropagation()}>
+								<Menu as="div" className="relative inline-block text-left">
+									<Menu.Button className="p-1.5 rounded-full hover:bg-gray-500/20">
+										<MoreVertical className="w-5 h-5" />
+									</Menu.Button>
+									<Menu.Items
+										anchor="bottom end"
+										className="w-40 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+										<div className="px-1 py-1">
+											<Menu.Item>
+												{({ active }) => (
+													<button
+														onClick={() => handleRename(convo)}
+														className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${
+															active
+																? "bg-blue-500 text-white"
+																: "text-gray-900"
+														}`}>
+														<Pencil className="w-4 h-4 mr-2" />
+														Rename
+													</button>
+												)}
+											</Menu.Item>
+											<Menu.Item>
+												{({ active }) => (
+													<button
+														onClick={() => handleDelete(convo.id)}
+														className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${
+															active
+																? "bg-red-500 text-white"
+																: "text-red-600"
+														}`}>
+														<Trash2 className="w-4 h-4 mr-2" />
+														Delete
+													</button>
+												)}
+											</Menu.Item>
+										</div>
+									</Menu.Items>
+								</Menu>
+							</div>
 						</div>
 					))}
 				</div>
@@ -391,13 +407,13 @@ export default function PremiumChatPage() {
 				/>
 			)}
 			{/* Main Content */}
-			<main className="flex-1 flex flex-col h-[82.1vh] bg-gradient-to-t from-transparent to-white">
+			<main className="flex-1 flex flex-col h-[82.1vh] bg-gradient-to-b from-white to-blue-50">
 				{/* Mobile Header */}
-				<header className="md:hidden flex items-center justify-between p-4 bg-white/70 backdrop-blur-lg border-b">
+				<header className="md:hidden flex items-center justify-between p-4 bg-white/70 backdrop-blur-lg border-b border-gray-200">
 					<button onClick={() => setSidebarOpen(!isSidebarOpen)}>
-						<MenuIcon className="w-6 h-6" />
+						<MenuIcon className="w-6 h-6 text-gray-600" />
 					</button>
-					<h1 className="text-lg font-semibold truncate">
+					<h1 className="text-lg font-semibold truncate text-gray-800">
 						{activeConversationId
 							? conversations.find((c) => c.id === activeConversationId)?.title
 							: "New Chat"}
@@ -409,9 +425,9 @@ export default function PremiumChatPage() {
 				<div className="flex-1 p-6 overflow-y-auto pb-24 [mask-image:linear-gradient(to_bottom,black_calc(100%-6rem),transparent)]">
 					<div className="max-w-4xl mx-auto">
 						{messages.length === 0 && !isLoading && (
-							<div className="flex flex-col items-center justify-center h-full text-gray-500">
-								<SparklesIcon className="w-16 h-16 mb-4" />
-								<h2 className="text-2xl font-semibold">
+							<div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
+								<Sparkles className="w-16 h-16 mb-4 text-blue-400" />
+								<h2 className="text-2xl font-semibold text-gray-700">
 									Start a new conversation
 								</h2>
 								<p>Ask me anything about your subjects!</p>
@@ -420,14 +436,14 @@ export default function PremiumChatPage() {
 						{messages.map((msg, index) => (
 							<div
 								key={index}
-								className={`flex my-5 ${
+								className={`flex my-5 gap-3 ${
 									msg.role === "user" ? "justify-end" : "justify-start"
 								}`}>
 								<div
 									className={`max-w-2xl p-4 rounded-2xl shadow-md ${
 										msg.role === "user"
-											? "bg-blue-500 text-white rounded-br-none"
-											: "bg-white text-gray-800 rounded-bl-none"
+											? "bg-blue-500 text-white rounded-br-lg"
+											: "bg-white text-gray-800 rounded-bl-lg"
 									}`}>
 									{msg.role === "assistant" ? (
 										<StyledMarkdown content={msg.content} />
@@ -454,8 +470,14 @@ export default function PremiumChatPage() {
 								<div className="p-4 rounded-2xl shadow-md bg-white text-gray-800 rounded-bl-none">
 									<div className="flex items-center space-x-2">
 										<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-										<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-75" />
-										<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse delay-150" />
+										<div
+											className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
+											style={{ animationDelay: "0.2s" }}
+										/>
+										<div
+											className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
+											style={{ animationDelay: "0.4s" }}
+										/>
 									</div>
 								</div>
 							</div>
@@ -464,154 +486,29 @@ export default function PremiumChatPage() {
 				</div>
 
 				{/* User Input Form */}
-				<div className="p-4">
+				<div className="p-4 bg-gradient-to-t from-white/50 to-transparent">
 					<div className="max-w-4xl mx-auto">
-						<form onSubmit={handleSubmit} className="flex items-center">
+						<form
+							onSubmit={handleSubmit}
+							className="flex items-center bg-white rounded-full shadow-md border border-gray-200">
 							<input
 								type="text"
 								value={userInput}
 								onChange={(e) => setUserInput(e.target.value)}
 								placeholder="Ask your AI teacher a question..."
-								className="flex-1 p-3 border-2 bg-blue-50 backdrop-blur-lg rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
+								className="flex-1 p-4 bg-transparent rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
 								disabled={isLoading}
 							/>
 							<button
 								type="submit"
-								className="ml-3 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 transition-colors"
+								className="m-1.5 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
 								disabled={isLoading || !userInput.trim()}>
-								<SendIcon className="w-5 h-5" />
+								<Send className="w-5 h-5" />
 							</button>
 						</form>
 					</div>
 				</div>
 			</main>
 		</div>
-	)
-}
-
-// --- SVG Icons ---
-function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor">
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				strokeWidth={2}
-				d="M12 4v16m8-8H4"
-			/>
-		</svg>
-	)
-}
-
-function DotsVerticalIcon(props: React.SVGProps<SVGSVGElement>) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor">
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				strokeWidth={2}
-				d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-			/>
-		</svg>
-	)
-}
-
-function PencilIcon(props: React.SVGProps<SVGSVGElement>) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor">
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				strokeWidth={2}
-				d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z"
-			/>
-		</svg>
-	)
-}
-
-function TrashIcon(props: React.SVGProps<SVGSVGElement>) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor">
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				strokeWidth={2}
-				d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-			/>
-		</svg>
-	)
-}
-
-function MenuIcon(props: React.SVGProps<SVGSVGElement>) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor">
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				strokeWidth={2}
-				d="M4 6h16M4 12h16m-7 6h7"
-			/>
-		</svg>
-	)
-}
-
-function SendIcon(props: React.SVGProps<SVGSVGElement>) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor">
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				strokeWidth={2}
-				d="M5 13l4 4L19 7"
-			/>
-		</svg>
-	)
-}
-
-function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
-	return (
-		<svg
-			{...props}
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor">
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				strokeWidth={2}
-				d="M5 3v4M3 5h4M19 3v4M17 5h4M12 3v18M3 12h18M5 21v-4M3 19h4M19 21v-4M17 19h4"
-			/>
-		</svg>
 	)
 }
