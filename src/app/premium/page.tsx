@@ -18,6 +18,8 @@ import {
 	Paperclip,
 	File as FileIcon,
 	X,
+	Volume2,
+	Pause,
 } from "lucide-react"
 
 // --- Type Definitions ---
@@ -60,6 +62,10 @@ export default function PremiumChatPage() {
 	const [summary, setSummary] = useState<string | null>(null)
 	const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
 	const fileInputRef = useRef<HTMLInputElement>(null)
+	const [audioState, setAudioState] = useState<{
+		[key: number]: "loading" | "playing" | "idle"
+	}>({})
+	const audioRef = useRef<HTMLAudioElement | null>(null)
 
 	const isUploading = attachedFiles.some((f) => f.status === "processing")
 
@@ -228,6 +234,8 @@ export default function PremiumChatPage() {
 				"text/plain",
 				"audio/mpeg",
 				"audio/wav",
+				"video/mp4",
+				"video/webm",
 			]
 			if (!allowedTypes.includes(file.type)) {
 				setAttachedFiles((prev) =>
@@ -284,6 +292,57 @@ export default function PremiumChatPage() {
 	const removeFile = (fileToRemove: File) => {
 		setAttachedFiles((prev) => prev.filter((f) => f.file !== fileToRemove))
 	}
+
+	const handlePlayAudio = async (text: string, index: number) => {
+		if (audioRef.current && audioState[index] === "playing") {
+			audioRef.current.pause()
+			setAudioState((prev) => ({ ...prev, [index]: "idle" }))
+			return
+		}
+
+		if (audioRef.current) {
+			audioRef.current.pause()
+			setAudioState({})
+		}
+
+		setAudioState((prev) => ({ ...prev, [index]: "loading" }))
+
+		try {
+			const response = await fetch("/api/text-to-speech", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ text }),
+			})
+
+			if (!response.ok) {
+				throw new Error("Failed to fetch audio")
+			}
+
+			const audioBlob = await response.blob()
+			const audioUrl = URL.createObjectURL(audioBlob)
+			const audio = new Audio(audioUrl)
+			audioRef.current = audio
+
+			audio.play()
+			setAudioState((prev) => ({ ...prev, [index]: "playing" }))
+
+			audio.onended = () => {
+				setAudioState((prev) => ({ ...prev, [index]: "idle" }))
+				URL.revokeObjectURL(audioUrl)
+			}
+		} catch (error) {
+			console.error("Failed to play audio:", error)
+			setAudioState((prev) => ({ ...prev, [index]: "idle" }))
+		}
+	}
+
+	useEffect(() => {
+		return () => {
+			if (audioRef.current) {
+				audioRef.current.pause()
+			}
+		}
+	}, [])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -576,7 +635,20 @@ export default function PremiumChatPage() {
 											: "bg-white text-gray-800 rounded-bl-lg"
 									}`}>
 									{msg.role === "assistant" ? (
-										<StyledMarkdown content={msg.content} />
+										<div className="flex items-start justify-between">
+											<StyledMarkdown content={msg.content} />
+											<button
+												onClick={() => handlePlayAudio(msg.content, index)}
+												className="ml-4 p-1.5 rounded-full hover:bg-gray-200 transition-colors flex-shrink-0">
+												{audioState[index] === "loading" ? (
+													<Loader className="w-4 h-4 animate-spin" />
+												) : audioState[index] === "playing" ? (
+													<Pause className="w-4 h-4" />
+												) : (
+													<Volume2 className="w-4 h-4" />
+												)}
+											</button>
+										</div>
 									) : (
 										<>
 											{msg.attachments && msg.attachments.length > 0 && (
@@ -665,7 +737,7 @@ export default function PremiumChatPage() {
 								multiple
 								onChange={handleFileChange}
 								className="hidden"
-								accept="image/png,image/jpeg,application/pdf,text/plain,audio/mpeg,audio/wav"
+								accept="image/png,image/jpeg,application/pdf,text/plain,audio/mpeg,audio/wav,video/mp4,video/webm"
 							/>
 							<button
 								type="button"
