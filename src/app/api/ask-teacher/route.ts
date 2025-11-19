@@ -46,7 +46,43 @@ export async function POST(req: NextRequest) {
     }
     console.log('[/api/ask-teacher] Question received:', question);
 
-    // 1. Embed the User Question
+    // 1. Classify User Intent
+    console.log('[/api/ask-teacher] Classifying user intent...');
+    const classificationModel = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      generationConfig: { response_mime_type: 'application/json' },
+    });
+    const classification_prompt = `
+      You are an expert at classifying user intent. Please classify the following user question into one of three categories:
+      1. small_talk: The user is making a simple greeting, thank you, or other conversational filler.
+      2. contextual_query: The user is asking a question about the current conversation.
+      3. general_query: The user is asking a general question that may or may not be related to the NIOS books.
+
+      Please respond with a JSON object with a single key "intent" and one of the three categories as the value.
+
+      User question: "${question}"
+    `;
+    const classificationResult = await classificationModel.generateContent(classification_prompt);
+    const intent = JSON.parse(classificationResult.response.text()).intent;
+    console.log('[/api/ask-teacher] User intent classified as:', intent);
+
+    if (intent === 'small_talk') {
+      console.log('[/api/ask-teacher] Handling small talk...');
+      const smallTalkModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const small_talk_prompt = `
+        You are a friendly and helpful NIOS teacher. The user has engaged in small talk. Please provide a brief, friendly, and conversational response.
+
+        User's message: "${question}"
+
+        Response:
+      `;
+      const smallTalkResult = await smallTalkModel.generateContent(small_talk_prompt);
+      const answer = smallTalkResult.response.text();
+      return NextResponse.json({ answer });
+    }
+
+
+    // 2. Embed the User Question
     console.log('[/api/ask-teacher] Embedding user question...');
     const embeddingModel = genAI.getGenerativeModel({ model: 'text-embedding-004' });
     const embeddingResult = await embeddingModel.embedContent(question);
@@ -69,10 +105,32 @@ export async function POST(req: NextRequest) {
 
     if (!retrieved_chunks || retrieved_chunks.length === 0) {
       console.log('[/api/ask-teacher] No relevant chunks found');
-      return NextResponse.json({
-        answer: "I could not find any relevant information in your book data to answer that question.",
-        sources: [],
-      });
+      if (intent === 'contextual_query') {
+        console.log('[/api/ask-teacher] Handling contextual query with no new context...');
+        const contextualModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const contextual_prompt = `
+          You are a helpful NIOS teacher. The user has asked a question about the current conversation, but there is no new information in the NIOS books to answer it. Please answer the user's question based on the provided chat history and summary.
+
+          Chat History:
+          ${history}
+
+          Summary:
+          ${summary}
+
+          User's question: "${question}"
+
+          Answer:
+        `;
+        const contextualResult = await contextualModel.generateContent(contextual_prompt);
+        const answer = contextualResult.response.text();
+        return NextResponse.json({ answer });
+      } else {
+        console.log('[/api/ask-teacher] Handling general query with no new context...');
+        return NextResponse.json({
+          answer: "My apologies, but I can only answer questions based on the content of your selected NIOS books.",
+          sources: [],
+        });
+      }
     }
     console.log('[/api/ask-teacher] Retrieved', retrieved_chunks.length, 'chunks');
 
