@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     // 1. Classify User Intent
     console.log('[/api/ask-teacher] Classifying user intent...');
     const classificationModel = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       generationConfig: { responseMimeType: 'application/json' },
     });
     const classification_prompt = `
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     if (intent === 'small_talk') {
       console.log('[/api/ask-teacher] Handling small talk...');
-      const smallTalkModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const smallTalkModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const small_talk_prompt = `
         You are a friendly and helpful NIOS teacher. The user has engaged in small talk. Please provide a brief, friendly, and conversational response.
 
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       console.log('[/api/ask-teacher] No relevant chunks found');
       if (intent === 'contextual_query') {
         console.log('[/api/ask-teacher] Handling contextual query with no new context...');
-        const contextualModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const contextualModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
         const contextual_prompt = `
           You are a helpful NIOS teacher. The user has asked a question about the current conversation, but there is no new information in the NIOS books to answer it. Please answer the user's question based on the provided chat history and summary.
 

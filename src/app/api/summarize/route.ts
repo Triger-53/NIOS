@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Messages are required' }, { status: 400 });
     }
 
-    const llm = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const llm = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const history_string = messages
       .map((msg: { role: string; content: string }) =>
