@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     // 1. Classify User Intent
     console.log('[/api/ask-teacher] Classifying user intent...');
     const classificationModel = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       generationConfig: { responseMimeType: 'application/json' },
     });
     const classification_prompt = `
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     if (intent === 'small_talk') {
       console.log('[/api/ask-teacher] Handling small talk...');
-      const smallTalkModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const smallTalkModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const small_talk_prompt = `
         You are a friendly and helpful NIOS teacher. The user has engaged in small talk. Please provide a brief, friendly, and conversational response.
 
@@ -107,6 +107,7 @@ export async function POST(req: NextRequest) {
       console.log('[/api/ask-teacher] No relevant chunks found');
       if (intent === 'contextual_query') {
         console.log('[/api/ask-teacher] Handling contextual query with no new context...');
+        feature-chat-history-summarization
         const history_string =
           history && history.length > 0
             ? "--- CHAT HISTORY ---\n" +
@@ -119,7 +120,8 @@ export async function POST(req: NextRequest) {
                 .join("\n") +
               "\n\n"
             : "";
-        const contextualModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const contextualModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+        main
         const contextual_prompt = `
           You are a helpful NIOS teacher. The user has asked a question about the current conversation, but there is no new information in the NIOS books to answer it. Please answer the user's question based on the provided chat history and summary.
 
@@ -162,7 +164,7 @@ export async function POST(req: NextRequest) {
       "Answer the student's question based on your knowledge. Your knowledge is derived from the context provided below. " +
       "Do not mention the context or that your knowledge is limited. Speak as if you know this information innately. " +
       "If the information to answer the question is not available, politely state that you cannot answer that question without providing a reason. " +
-      "Always structure your answer clearly and concisely.";
+      "Always structure your answer clearly.";
 
     const history_string =
       history && history.length > 0
