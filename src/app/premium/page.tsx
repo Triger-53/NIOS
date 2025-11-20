@@ -552,7 +552,7 @@ export default function PremiumChatPage() {
 	}
 
 	return (
-		<div className="flex h-[calc(100dvh-12rem)] w-full bg-gray-50 text-gray-800 overflow-hidden">
+		<div className="flex h-[calc(100dvh-12rem)] md:h-[calc(100dvh-8rem)] w-full bg-gray-50 text-gray-800 overflow-hidden">
 			{/* Sidebar */}
 			<aside
 				className={`fixed top-0 left-0 h-full z-40 bg-white/80 backdrop-blur-md border-r border-gray-200 p-4 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:z-auto ${
