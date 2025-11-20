@@ -552,12 +552,12 @@ export default function PremiumChatPage() {
 	}
 
 	return (
-		<div className="flex h-[82.1vh] w-full bg-gray-50 text-gray-800 overflow-hidden">
+		<div className="flex h-[calc(100dvh-9rem)] w-full bg-gray-50 text-gray-800 overflow-hidden">
 			{/* Sidebar */}
 			<aside
 				className={`fixed top-0 left-0 h-full z-40 bg-white/80 backdrop-blur-md border-r border-gray-200 p-4 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:z-auto ${
 					isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-				} w-72 md:w-80 pt-[10vh] flex`}>
+				} w-72 md:w-80 pt-24 md:pt-4 flex`}>
 				<div className="flex justify-between items-center mb-6">
 					<h2 className="text-2xl font-bold text-gray-800">History</h2>
 					<button
@@ -648,7 +648,7 @@ export default function PremiumChatPage() {
 				/>
 			)}
 			{/* Main Content */}
-			<main className="flex-1 flex flex-col h-[82.1vh] bg-gradient-to-b from-white to-blue-50">
+			<main className="flex-1 flex flex-col h-full bg-gradient-to-b from-white to-blue-50">
 				{/* Mobile Header */}
 				<header className="md:hidden flex items-center justify-between p-4 bg-white/70 backdrop-blur-lg border-b border-gray-200">
 					<button onClick={() => setSidebarOpen(!isSidebarOpen)}>
@@ -663,7 +663,7 @@ export default function PremiumChatPage() {
 				</header>
 
 				{/* Chat Messages */}
-				<div className="flex-1 p-6 overflow-y-auto pb-24 [mask-image:linear-gradient(to_bottom,black_calc(100%-6rem),transparent)]">
+				<div className="flex-1 p-4 md:p-6 overflow-y-auto pb-24 [mask-image:linear-gradient(to_bottom,black_calc(100%-6rem),transparent)]">
 					<div className="max-w-4xl mx-auto">
 						{messages.length === 0 && !isLoading && (
 							<div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
