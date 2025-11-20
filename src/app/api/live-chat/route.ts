@@ -61,11 +61,15 @@ export async function POST(req: NextRequest) {
 		])
 		const transcribedText = transcriptionResult.response.text()
 
-		if (!transcribedText.trim()) {
+		const junkSubstrings = ["[no speech]", "[Music]"]
+		if (
+			!transcribedText.trim() ||
+			junkSubstrings.some((sub) => transcribedText.includes(sub))
+		) {
 			return NextResponse.json(
 				{
-					error: "Could not understand audio. Please try again.",
-					transcribedText: "",
+					error: "No meaningful speech detected. Please try again.",
+					transcribedText: transcribedText,
 				},
 				{ status: 400 }
 			)
@@ -111,12 +115,21 @@ export async function POST(req: NextRequest) {
 			}
 			const [ttsResponse] = await ttsClient.synthesizeSpeech(request)
 			audioContent = ttsResponse.audioContent
-		} catch (ttsError) {
+		} catch (ttsError: unknown) {
 			console.error("Google Cloud TTS Error:", ttsError)
+			let errorMessage = "Text-to-speech service is not configured correctly."
+			if (
+				ttsError instanceof Error &&
+				"message" in ttsError &&
+				typeof ttsError.message === "string" &&
+				ttsError.message.includes("Could not load the default credentials")
+			) {
+				errorMessage =
+					"Text-to-speech authentication failed. Please ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly."
+			}
 			return NextResponse.json(
 				{
-					error:
-						"Text-to-speech service is not configured correctly. Please check server logs.",
+					error: errorMessage,
 					transcribedText: transcribedText, // Still return the text so it can be displayed
 					textResponse: ragAnswerText,
 				},
