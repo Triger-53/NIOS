@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 
 const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-const MODEL = "gemini-2.5-flash-live";
+const MODEL = "gemini-2.5-flash-live"; // Corrected to a valid model name
 
 type LiveStatus = "disconnected" | "connecting" | "connected" | "error";
 
@@ -141,7 +141,7 @@ export function useLiveApi({
 
   const connect = useCallback(async () => {
     if (!GEMINI_API_KEY) {
-      setError("Missing NEXT_PUBLIC_GEMINI_API_KEY");
+      setError("Missing GEMINI_API_KEY");
       return;
     }
 
@@ -150,42 +150,46 @@ export function useLiveApi({
     setStatus("connecting");
     setError(null);
 
-    const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${GEMINI_API_KEY}`;
+    // Removed `&alt=sse` which is for HTTP streaming, not WebSockets
+    const url = `wss://generativelanguage.googleapis.com/v1beta/models/${MODEL}:streamGenerateContent?key=${GEMINI_API_KEY}`;
+    console.log(`[DEBUG] Connecting to WebSocket at: ${url}`);
 
     try {
       const ws = new WebSocket(url);
-      wsRef.current = ws;
+      wsRef.current = ws; // Keep a reference to the WebSocket
 
       ws.onopen = () => {
-        console.log("WebSocket Connected");
+        console.log("[DEBUG] WebSocket Connection Opened Successfully.");
         setStatus("connected");
 
         // Send Setup Message
         const setupMsg = {
-          setup: {
-            model: `models/${MODEL}`,
-            tools: [
-              {
-                function_declarations: [
-                  {
-                    name: "ask_teacher",
-                    description: "Use this tool to retrieve knowledge from the teacher's database (RAG) when you need to answer a student's question based on their study material.",
-                    parameters: {
-                      type: "OBJECT",
-                      properties: {
-                        query: { type: "STRING", description: "The student's question." },
-                      },
-                      required: ["query"],
+          // The new endpoint uses a different structure for the initial message.
+          // We now send `contents` to start the conversation.
+          // The tool configuration is sent as part of the `contents`.
+          contents: {
+            tools: [{
+              function_declarations: [{
+                name: "ask_teacher",
+                description: "Use this tool to retrieve knowledge from the teacher's database (RAG) when you need to answer a student's question based on their study material.",
+                parameters: {
+                  type: "OBJECT",
+                  properties: {
+                    query: {
+                      type: "STRING",
+                      description: "The student's question."
                     },
                   },
-                ],
-              },
-            ],
-            generation_config: {
-                response_modalities: ["AUDIO"]
-            }
+                  required: ["query"],
+                },
+              }, ],
+            }, ],
           },
+          generationConfig: {
+            response_mime_type: "audio/opus"
+          }
         };
+        console.log("[DEBUG] Sending setup message:", JSON.stringify(setupMsg, null, 2));
         ws.send(JSON.stringify(setupMsg));
       };
 
@@ -195,29 +199,31 @@ export function useLiveApi({
             const text = await event.data.text();
             try {
                 const data = JSON.parse(text);
+                console.log("[DEBUG] Received Blob message (parsed as JSON):", data);
                 processMessage(data);
             } catch (e) {
-                console.error("Failed to parse WS message", e);
+                console.error("[DEBUG] Failed to parse Blob message as JSON. Content:", text, "Error:", e);
             }
         } else {
              try {
                 const data = JSON.parse(event.data);
+                console.log("[DEBUG] Received Text message (parsed as JSON):", data);
                 processMessage(data);
             } catch (e) {
-                console.error("Failed to parse WS message", e);
+                console.error("[DEBUG] Failed to parse Text message as JSON. Content:", event.data, "Error:", e);
             }
         }
       };
 
       ws.onerror = (e) => {
-        console.error("WebSocket Error:", e);
+        console.error("[DEBUG] WebSocket Error Event:", e);
         setError("Connection error");
         setStatus("error");
       };
 
-      ws.onclose = () => {
-        console.log("WebSocket Closed");
-        if (status !== "error") setStatus("disconnected");
+      ws.onclose = (event) => {
+        console.log(`[DEBUG] WebSocket Closed. Code: ${event.code}, Reason: ${event.reason}`);
+        setStatus(currentStatus => (currentStatus === "error" ? "error" : "disconnected"));
       };
 
     } catch (err) {
@@ -225,7 +231,8 @@ export function useLiveApi({
       setError("Failed to connect");
       setStatus("error");
     }
-  }, [status, processMessage]);
+  // Remove `status` from the dependency array to prevent re-creating the function on every status change.
+  }, [processMessage, handleToolCall]);
 
   // Audio Recording Logic (PCM 16kHz)
   const startRecording = useCallback(async () => {
@@ -263,19 +270,18 @@ export function useLiveApi({
         const buffer = pcmData.buffer;
         const base64 = arrayBufferToBase64(buffer);
 
+        // console.log("[DEBUG] Sending audio chunk."); // Uncomment for very verbose logging
         // Send to Gemini
         if (wsRef.current?.readyState === WebSocket.OPEN) {
-            const msg = {
-                realtime_input: {
-                    media_chunks: [
-                        {
-                            mime_type: "audio/pcm",
-                            data: base64
-                        }
-                    ]
-                }
-            };
-            wsRef.current.send(JSON.stringify(msg));
+          // The new endpoint expects audio chunks within the `contents` structure.
+          const msg = {
+            contents: {
+              parts: [{
+                inline_data: { mime_type: "audio/l16;rate=16000", data: base64 }
+              }]
+            }
+          };
+          wsRef.current.send(JSON.stringify(msg));
         }
       };
 
