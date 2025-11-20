@@ -321,6 +321,8 @@ export default function PremiumChatPage() {
 	const stopRecording = () => {
 		if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
 			mediaRecorderRef.current.stop()
+			// Stop all tracks on the stream to turn off the microphone
+			mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop())
 			setIsRecording(false)
 			// The rest is handled by onstop event listener (handleAudioSubmit)
 		}
