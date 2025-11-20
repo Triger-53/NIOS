@@ -18,6 +18,7 @@ import {
 	Paperclip,
 	File as FileIcon,
 	X,
+	Mic,
 } from "lucide-react"
 
 // --- Type Definitions ---
@@ -59,6 +60,11 @@ export default function PremiumChatPage() {
 	const [editingTitle, setEditingTitle] = useState("")
 	const [summary, setSummary] = useState<string | null>(null)
 	const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
+	const [isRecording, setIsRecording] = useState(false)
+	const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null)
+	const [isLiveChatActive, setIsLiveChatActive] = useState(false)
+	const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+	const audioChunksRef = useRef<Blob[]>([])
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	const isUploading = attachedFiles.some((f) => f.status === "processing")
@@ -208,7 +214,7 @@ export default function PremiumChatPage() {
 		}))
 		setAttachedFiles((prev) => [...prev, ...newFiles])
 
-		newFiles.forEach(async (newFile, index) => {
+		newFiles.forEach(async (newFile, _index) => {
 			const { file } = newFile
 			// Basic validation
 			if (file.size > 100 * 1024 * 1024) {
@@ -228,6 +234,8 @@ export default function PremiumChatPage() {
 				"text/plain",
 				"audio/mpeg",
 				"audio/wav",
+				"video/mp4",
+				"video/webm",
 			]
 			if (!allowedTypes.includes(file.type)) {
 				setAttachedFiles((prev) =>
@@ -264,7 +272,7 @@ export default function PremiumChatPage() {
 							: f
 					)
 				)
-			} catch (error) {
+			} catch (_error) {
 				setAttachedFiles((prev) =>
 					prev.map((f) =>
 						f.file === file
@@ -284,6 +292,118 @@ export default function PremiumChatPage() {
 	const removeFile = (fileToRemove: File) => {
 		setAttachedFiles((prev) => prev.filter((f) => f.file !== fileToRemove))
 	}
+
+	// --- Live Audio Chat Handlers ---
+
+	const startRecording = async () => {
+		if (audioPlayer) {
+			audioPlayer.pause()
+			setAudioPlayer(null)
+		}
+		setIsLiveChatActive(true) // Show AI is thinking/responding
+		try {
+			const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+			mediaRecorderRef.current = new MediaRecorder(stream)
+			audioChunksRef.current = []
+			mediaRecorderRef.current.ondataavailable = (event) => {
+				audioChunksRef.current.push(event.data)
+			}
+			mediaRecorderRef.current.onstop = handleAudioSubmit
+			mediaRecorderRef.current.start()
+			setIsRecording(true)
+		} catch (err) {
+			console.error("Error accessing microphone:", err)
+			alert("Could not access microphone. Please enable it in your browser settings.")
+			setIsLiveChatActive(false)
+		}
+	}
+
+	const stopRecording = () => {
+		if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+			mediaRecorderRef.current.stop()
+			setIsRecording(false)
+			// The rest is handled by onstop event listener (handleAudioSubmit)
+		}
+	}
+
+	const handleAudioSubmit = async () => {
+		if (audioChunksRef.current.length === 0) {
+			setIsLiveChatActive(false)
+			return
+		}
+
+		const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" })
+		audioChunksRef.current = []
+
+		const formData = new FormData()
+		formData.append("file", audioBlob, "user-audio.webm")
+		// Send current history and summary for context
+		const historyToSend = summary
+			? messages.slice(messages.length - (messages.length % 10))
+			: messages
+		formData.append("history", JSON.stringify(historyToSend))
+		formData.append("summary", summary || "")
+
+		try {
+			const response = await fetch("/api/live-chat", {
+				method: "POST",
+				body: formData,
+			})
+
+			if (!response.ok) {
+				const errorData = await response.json()
+				throw new Error(
+					errorData.error || "Live chat API request failed"
+				)
+			}
+
+			// Extract text from headers to update chat history
+			const transcribedText = decodeURIComponent(
+				response.headers.get("X-Transcribed-Text") || ""
+			)
+			const textResponse = decodeURIComponent(
+				response.headers.get("X-Text-Response") || ""
+			)
+
+			if (transcribedText) {
+				const userMessage: Message = { role: "user", content: transcribedText }
+				const assistantMessage: Message = {
+					role: "assistant",
+					content: textResponse,
+				}
+				setMessages((prev) => [...prev, userMessage, assistantMessage])
+			}
+
+
+			const audioBlobResponse = await response.blob()
+			const audioUrl = URL.createObjectURL(audioBlobResponse)
+			const newAudioPlayer = new Audio(audioUrl)
+			setAudioPlayer(newAudioPlayer) // Save player to state to allow interruption
+			newAudioPlayer.play()
+			newAudioPlayer.onended = () => {
+				setIsLiveChatActive(false)
+			}
+		} catch (error) {
+			console.error("Error during live chat:", error)
+			const errorMessage: Message = {
+				role: "assistant",
+				content: "Sorry, I had trouble with that request. Please try again.",
+			}
+			setMessages((prev) => [...prev, errorMessage])
+			setIsLiveChatActive(false)
+		}
+	}
+
+	// Cleanup effect for audio player
+	useEffect(() => {
+		return () => {
+			if (audioPlayer) {
+				audioPlayer.pause()
+				URL.revokeObjectURL(audioPlayer.src)
+			}
+		}
+	}, [audioPlayer])
+
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -665,7 +785,7 @@ export default function PremiumChatPage() {
 								multiple
 								onChange={handleFileChange}
 								className="hidden"
-								accept="image/png,image/jpeg,application/pdf,text/plain,audio/mpeg,audio/wav"
+								accept="image/png,image/jpeg,application/pdf,text/plain,audio/mpeg,audio/wav,video/mp4,video/webm"
 							/>
 							<button
 								type="button"
@@ -686,6 +806,22 @@ export default function PremiumChatPage() {
 								className="flex-1 p-4 bg-transparent focus:ring-0 focus:outline-none"
 								disabled={isLoading || isUploading}
 							/>
+							<button
+								type="button"
+								onMouseDown={startRecording}
+								onMouseUp={stopRecording}
+								onTouchStart={startRecording}
+								onTouchEnd={stopRecording}
+								className={`m-1.5 p-3 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg ${
+									isRecording
+										? "bg-red-500 animate-pulse"
+										: isLiveChatActive
+										? "bg-yellow-500"
+										: "bg-green-500 hover:bg-green-600"
+								}`}
+							>
+								<Mic className="w-5 h-5" />
+							</button>
 							<button
 								type="submit"
 								className="m-1.5 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
