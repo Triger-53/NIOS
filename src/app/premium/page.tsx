@@ -552,7 +552,7 @@ export default function PremiumChatPage() {
 	}
 
 	return (
-		<div className="flex h-[calc(100dvh-9rem)] w-full bg-gray-50 text-gray-800 overflow-hidden">
+		<div className="flex h-[calc(100dvh-12rem)] w-full bg-gray-50 text-gray-800 overflow-hidden">
 			{/* Sidebar */}
 			<aside
 				className={`fixed top-0 left-0 h-full z-40 bg-white/80 backdrop-blur-md border-r border-gray-200 p-4 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:z-auto ${
@@ -741,7 +741,7 @@ export default function PremiumChatPage() {
 				</div>
 
 				{/* User Input Form */}
-				<div className="p-4 bg-gradient-to-t from-white/50 to-transparent">
+				<div className="p-2 md:p-4 bg-gradient-to-t from-white/50 to-transparent">
 					<div className="max-w-4xl mx-auto">
 						{/* Attached Files Display */}
 						<div className="flex flex-wrap gap-2 mb-2">
@@ -769,7 +769,7 @@ export default function PremiumChatPage() {
 						</div>
 						<form
 							onSubmit={handleSubmit}
-							className="flex items-center bg-white rounded-full shadow-md border border-gray-200">
+							className="flex items-center bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
 							<input
 								type="file"
 								ref={fileInputRef}
@@ -782,7 +782,7 @@ export default function PremiumChatPage() {
 								type="button"
 								onClick={() => fileInputRef.current?.click()}
 								disabled={isUploading}
-								className="m-1.5 p-3 text-gray-500 rounded-full hover:bg-gray-100 disabled:opacity-50 transition-all duration-200">
+								className="m-1 p-2 md:m-1.5 md:p-3 text-gray-500 rounded-full hover:bg-gray-100 disabled:opacity-50 transition-all duration-200 shrink-0">
 								{isUploading ? (
 									<Loader className="w-5 h-5 animate-spin" />
 								) : (
@@ -793,8 +793,8 @@ export default function PremiumChatPage() {
 								type="text"
 								value={userInput}
 								onChange={(e) => setUserInput(e.target.value)}
-								placeholder="Ask your AI teacher a question..."
-								className="flex-1 p-4 bg-transparent focus:ring-0 focus:outline-none"
+								placeholder="Ask your AI teacher..."
+								className="flex-1 py-3 px-2 md:p-4 bg-transparent focus:ring-0 focus:outline-none min-w-0 text-sm md:text-base"
 								disabled={isLoading || isUploading}
 							/>
 							<button
@@ -804,7 +804,7 @@ export default function PremiumChatPage() {
 								onTouchStart={handleStartRecording}
 								onTouchEnd={handleStopRecording}
 								title={liveError || "Hold to speak"}
-								className={`m-1.5 p-3 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg ${
+								className={`m-1 p-2 md:m-1.5 md:p-3 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg shrink-0 ${
 									isLiveRecording
 										? "bg-red-500 animate-pulse"
 										: liveStatus === "connected"
@@ -816,7 +816,7 @@ export default function PremiumChatPage() {
 							</button>
 							<button
 								type="submit"
-								className="m-1.5 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
+								className="m-1 p-2 md:m-1.5 md:p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg shrink-0"
 								disabled={
 									isLoading ||
 									isUploading ||
