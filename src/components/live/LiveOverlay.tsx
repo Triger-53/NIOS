@@ -73,7 +73,7 @@ const LiveOverlay: React.FC<LiveOverlayProps> = ({ onClose }) => {
     <header className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
       <div className="flex items-center gap-3">
         <div className="w-3 h-3 rounded-full bg-rose-500 animate-pulse shadow-[0_0_10px_#f43f5e]" />
-        <h1 className="text-lg font-medium tracking-wide text-white/90">GEMINI LIVE</h1>
+        <h1 className="text-lg font-medium tracking-wide text-white/90">LIVE TEACHER</h1>
       </div>
       <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors text-white">
           <X className="w-6 h-6" />

@@ -113,7 +113,7 @@ If the user speaks another language, politely inform them in English and Hindi t
         callbacks: {
           onopen: () => {
             this.statusCallback(ConnectionState.CONNECTED);
-            this.logCallback('system', 'Connected to Gemini Live API');
+            this.logCallback('system', 'Connected to Live Teacher');
 
             // Start Audio Streaming and Analysis
             this.startAudioStream(audioStream, sessionPromise);
