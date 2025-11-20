@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 
 const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 const MODEL = "gemini-2.5-flash-live";
@@ -61,6 +61,7 @@ export function useLiveApi({
     setIsRecording(false);
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleToolCall = async (toolCall: any) => {
     console.log("Tool Call Received:", toolCall);
     const functionCalls = toolCall.functionCalls;
@@ -111,6 +112,32 @@ export function useLiveApi({
     };
     wsRef.current?.send(JSON.stringify(toolResponseMsg));
   };
+
+  // Define processMessage outside of useCallback so it can be used in connect
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const processMessage = useCallback((data: any) => {
+    // Handle Server Content
+    if (data.serverContent) {
+        const modelTurn = data.serverContent.modelTurn;
+        if (modelTurn?.parts) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            for (const part of modelTurn.parts as any[]) {
+                if (part.text && onTextReceived) {
+                    onTextReceived(part.text, "assistant");
+                }
+                if (part.inlineData && part.inlineData.mimeType.startsWith("audio/")) {
+                    if (onAudioReceived) {
+                        onAudioReceived(part.inlineData.data);
+                    }
+                }
+            }
+        }
+    }
+    // Handle Tool Use
+    if (data.toolCall) {
+        handleToolCall(data.toolCall);
+    }
+  }, [onTextReceived, onAudioReceived]);
 
   const connect = useCallback(async () => {
     if (!GEMINI_API_KEY) {
@@ -198,31 +225,7 @@ export function useLiveApi({
       setError("Failed to connect");
       setStatus("error");
     }
-  }, [status]);
-
-
-  const processMessage = (data: any) => {
-    // Handle Server Content
-    if (data.serverContent) {
-        const modelTurn = data.serverContent.modelTurn;
-        if (modelTurn?.parts) {
-            for (const part of modelTurn.parts) {
-                if (part.text && onTextReceived) {
-                    onTextReceived(part.text, "assistant");
-                }
-                if (part.inlineData && part.inlineData.mimeType.startsWith("audio/")) {
-                    if (onAudioReceived) {
-                        onAudioReceived(part.inlineData.data);
-                    }
-                }
-            }
-        }
-    }
-    // Handle Tool Use
-    if (data.toolCall) {
-        handleToolCall(data.toolCall);
-    }
-  };
+  }, [status, processMessage]);
 
   // Audio Recording Logic (PCM 16kHz)
   const startRecording = useCallback(async () => {

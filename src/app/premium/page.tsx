@@ -61,11 +61,6 @@ export default function PremiumChatPage() {
 	const [editingTitle, setEditingTitle] = useState("")
 	const [summary, setSummary] = useState<string | null>(null)
 	const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
-	// const [isRecording, setIsRecording] = useState(false)
-	const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null)
-	const [isLiveChatActive, setIsLiveChatActive] = useState(false)
-	const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-	const audioChunksRef = useRef<Blob[]>([])
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	const isUploading = attachedFiles.some((f) => f.status === "processing")
@@ -365,7 +360,7 @@ export default function PremiumChatPage() {
 							: f
 					)
 				)
-			} catch (_error) {
+			} catch {
 				setAttachedFiles((prev) =>
 					prev.map((f) =>
 						f.file === file
