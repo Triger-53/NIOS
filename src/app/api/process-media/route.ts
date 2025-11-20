@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
 		// 4. Generate content from the file
 		const prompt =
-			"Extract the text content from this file. If the file is an image, describe it. If it is a document, transcribe its text. If it is audio, transcribe the speech. Provide only the extracted text."
+			"Extract the text content from this file. If the file is an image, describe it. If it is a document, transcribe its text. If it is audio, transcribe the speech. If it is a video, transcribe the speech from its audio track. Provide only the extracted text."
 		const result = await model.generateContent([prompt, filePart])
 		const extractedText = result.response.text()
 
