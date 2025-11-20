@@ -18,7 +18,9 @@ import {
 	Paperclip,
 	File as FileIcon,
 	X,
+	Mic,
 } from "lucide-react"
+import LiveOverlay from "@/components/live/LiveOverlay"
 
 // --- Type Definitions ---
 interface Message {
@@ -59,6 +61,7 @@ export default function PremiumChatPage() {
 	const [editingTitle, setEditingTitle] = useState("")
 	const [summary, setSummary] = useState<string | null>(null)
 	const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
+	const [isLiveActive, setIsLiveActive] = useState(false)
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	const isUploading = attachedFiles.some((f) => f.status === "processing")
@@ -700,10 +703,21 @@ export default function PremiumChatPage() {
 								}>
 								<Send className="w-5 h-5" />
 							</button>
+
+							{/* Live Button */}
+							<button
+								type="button"
+								onClick={() => setIsLiveActive(true)}
+								className="m-1 p-2 md:m-1.5 md:p-3 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-all duration-200 shadow-md hover:shadow-lg shrink-0 animate-pulse"
+								title="Start Live Session"
+							>
+								<Mic className="w-5 h-5" />
+							</button>
 						</form>
 					</div>
 				</div>
 			</main>
+			{isLiveActive && <LiveOverlay onClose={() => setIsLiveActive(false)} />}
 		</div>
 	)
 }
