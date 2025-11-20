@@ -19,6 +19,7 @@ import {
 	File as FileIcon,
 	X,
 	Mic,
+	StopCircle,
 } from "lucide-react"
 
 // --- Type Definitions ---
@@ -66,6 +67,7 @@ export default function PremiumChatPage() {
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null)
 	const audioChunksRef = useRef<Blob[]>([])
 	const fileInputRef = useRef<HTMLInputElement>(null)
+	const messagesEndRef = useRef<HTMLDivElement>(null)
 
 	const isUploading = attachedFiles.some((f) => f.status === "processing")
 
@@ -115,6 +117,11 @@ export default function PremiumChatPage() {
 		return () => window.removeEventListener("resize", handleResize)
 	}, [])
 
+	// Auto-scroll to bottom when messages change
+	useEffect(() => {
+		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+	}, [messages, isLoading])
+
 	// --- Data Fetching ---
 	const fetchConversations = async () => {
 		try {
@@ -130,6 +137,10 @@ export default function PremiumChatPage() {
 
 	const fetchConversationMessages = async (conversationId: string) => {
 		setActiveConversationId(conversationId)
+		// Close sidebar on mobile when a chat is selected
+		if (window.innerWidth < 768) {
+			setSidebarOpen(false)
+		}
 		try {
 			const response = await fetch(`/api/chat-history/${conversationId}`)
 			if (response.ok) {
@@ -147,6 +158,9 @@ export default function PremiumChatPage() {
 		setActiveConversationId(null)
 		setMessages([])
 		setUserInput("")
+		if (window.innerWidth < 768) {
+			setSidebarOpen(false)
+		}
 	}
 
 	const handleRename = (convo: Conversation) => {
@@ -535,7 +549,7 @@ export default function PremiumChatPage() {
 	// --- Render Logic ---
 	if (isPremium === null) {
 		return (
-			<div className="flex justify-center items-center h-screen bg-gray-50">
+			<div className="flex justify-center items-center h-[60vh] bg-gray-50">
 				<Loader className="w-8 h-8 animate-spin text-blue-500" />
 				<p className="ml-4 text-lg text-gray-600">Loading your experience...</p>
 			</div>
@@ -544,8 +558,8 @@ export default function PremiumChatPage() {
 
 	if (!isPremium) {
 		return (
-			<div className="flex flex-col justify-center items-center h-screen text-center bg-gray-50 p-4">
-				<div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg">
+			<div className="flex flex-col justify-center items-center h-[80vh] text-center bg-gray-50 p-4">
+				<div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
 					<Sparkles className="w-16 h-16 mx-auto text-blue-500 mb-4" />
 					<h1 className="text-3xl font-bold text-gray-800 mb-2">
 						Unlock Your AI Teacher
@@ -567,35 +581,59 @@ export default function PremiumChatPage() {
 	}
 
 	return (
-		<div className="flex h-[82.1vh] w-full bg-gray-50 text-gray-800 overflow-hidden">
+		<div className="flex flex-col md:flex-row w-full h-[calc(100dvh-9rem)] bg-gray-50 relative">
+			{/* Mobile Sidebar Overlay */}
+			{isSidebarOpen && (
+				<div
+					className="fixed inset-0 bg-black/40 z-30 md:hidden backdrop-blur-sm transition-opacity duration-300"
+					onClick={() => setSidebarOpen(false)}
+				/>
+			)}
+
 			{/* Sidebar */}
 			<aside
-				className={`fixed top-0 left-0 h-full z-40 bg-white/80 backdrop-blur-md border-r border-gray-200 p-4 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:z-auto ${
-					isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-				} w-72 md:w-80 pt-[10vh] flex`}>
-				<div className="flex justify-between items-center mb-6">
-					<h2 className="text-2xl font-bold text-gray-800">History</h2>
-					<button
-						onClick={handleNewConversation}
-						className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all duration-200 shadow-md hover:shadow-lg">
-						<Plus className="w-5 h-5" />
-					</button>
+				className={`
+                    fixed inset-y-0 left-0 z-40 w-72 bg-white/90 backdrop-blur-xl border-r border-gray-200
+                    transform transition-transform duration-300 ease-in-out
+                    md:relative md:translate-x-0 md:w-80 md:inset-auto
+                    flex flex-col
+                    ${isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
+                `}>
+				{/* Sidebar Header */}
+				<div className="p-4 border-b border-gray-100 flex justify-between items-center mt-16 md:mt-0">
+					<h2 className="text-xl font-bold text-gray-800">Chats</h2>
+					<div className="flex gap-2">
+						<button
+							onClick={handleNewConversation}
+							className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all shadow-sm hover:shadow-md"
+							title="New Chat">
+							<Plus className="w-5 h-5" />
+						</button>
+						<button
+							onClick={() => setSidebarOpen(false)}
+							className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-full">
+							<X className="w-5 h-5" />
+						</button>
+					</div>
 				</div>
-				<div className="flex-grow overflow-y-auto -mr-2 pr-2 space-y-2">
+
+				{/* Conversation List */}
+				<div className="flex-1 overflow-y-auto p-3 space-y-2">
+					{conversations.length === 0 && (
+						<p className="text-center text-gray-400 text-sm mt-10">
+							No history yet.
+						</p>
+					)}
 					{conversations.map((convo) => (
 						<div
 							key={convo.id}
-							className={`group relative flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+							className={`group relative flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200 border border-transparent ${
 								activeConversationId === convo.id
-									? "bg-blue-500 text-white shadow-md"
-									: "hover:bg-gray-100"
+									? "bg-blue-50 border-blue-100 text-blue-700 shadow-sm"
+									: "hover:bg-gray-100 text-gray-700"
 							}`}
-							onClick={() => {
-								if (editingConversationId !== convo.id) {
-									fetchConversationMessages(convo.id)
-								}
-							}}>
-							<MessageSquare className="w-5 h-5 mr-3 flex-shrink-0" />
+							onClick={() => fetchConversationMessages(convo.id)}>
+							<MessageSquare className={`w-4 h-4 mr-3 flex-shrink-0 ${activeConversationId === convo.id ? 'text-blue-500' : 'text-gray-400'}`} />
 							{editingConversationId === convo.id ? (
 								<input
 									type="text"
@@ -603,188 +641,186 @@ export default function PremiumChatPage() {
 									onChange={(e) => setEditingTitle(e.target.value)}
 									onBlur={handleUpdateTitle}
 									onKeyDown={(e) => e.key === "Enter" && handleUpdateTitle()}
-									className="w-full bg-transparent border-b border-blue-300 focus:outline-none"
+									className="w-full bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
 									autoFocus
+									onClick={(e) => e.stopPropagation()}
 								/>
 							) : (
-								<p className="truncate pr-2 flex-grow">{convo.title}</p>
+								<p className="truncate flex-grow text-sm font-medium">{convo.title}</p>
 							)}
-							<div
-								className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0"
-								onClick={(e) => e.stopPropagation()}>
-								<Menu as="div" className="relative inline-block text-left">
-									<Menu.Button className="p-1.5 rounded-full hover:bg-gray-500/20">
-										<MoreVertical className="w-5 h-5" />
-									</Menu.Button>
-									<Menu.Items
-										anchor="bottom end"
-										className="w-40 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-										<div className="px-1 py-1">
-											<Menu.Item>
-												{({ active }) => (
-													<button
-														onClick={() => handleRename(convo)}
-														className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${
-															active
-																? "bg-blue-500 text-white"
-																: "text-gray-900"
-														}`}>
-														<Pencil className="w-4 h-4 mr-2" />
-														Rename
-													</button>
-												)}
-											</Menu.Item>
-											<Menu.Item>
-												{({ active }) => (
-													<button
-														onClick={() => handleDelete(convo.id)}
-														className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${
-															active
-																? "bg-red-500 text-white"
-																: "text-red-600"
-														}`}>
-														<Trash2 className="w-4 h-4 mr-2" />
-														Delete
-													</button>
-												)}
-											</Menu.Item>
-										</div>
-									</Menu.Items>
-								</Menu>
-							</div>
+
+							<Menu as="div" className="relative inline-block text-left ml-1">
+								<Menu.Button
+                                    className={`p-1 rounded-full hover:bg-gray-200/50 transition-opacity ${activeConversationId === convo.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 md:opacity-0 md:group-hover:opacity-100'}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+									<MoreVertical className="w-4 h-4" />
+								</Menu.Button>
+								<Menu.Items className="absolute right-0 mt-1 w-36 origin-top-right divide-y divide-gray-100 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+									<div className="p-1">
+										<Menu.Item>
+											{({ active }) => (
+												<button
+													onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRename(convo);
+                                                    }}
+													className={`group flex w-full items-center rounded-md px-2 py-2 text-xs ${
+														active ? "bg-blue-50 text-blue-700" : "text-gray-700"
+													}`}>
+													<Pencil className="mr-2 h-3 w-3" />
+													Rename
+												</button>
+											)}
+										</Menu.Item>
+										<Menu.Item>
+											{({ active }) => (
+												<button
+													onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDelete(convo.id);
+                                                    }}
+													className={`group flex w-full items-center rounded-md px-2 py-2 text-xs ${
+														active ? "bg-red-50 text-red-700" : "text-red-600"
+													}`}>
+													<Trash2 className="mr-2 h-3 w-3" />
+													Delete
+												</button>
+											)}
+										</Menu.Item>
+									</div>
+								</Menu.Items>
+							</Menu>
 						</div>
 					))}
 				</div>
 			</aside>
-			{isSidebarOpen && (
-				<div
-					className="fixed inset-0 bg-black/30 z-30 md:hidden backdrop-blur-sm"
-					onClick={() => setSidebarOpen(false)}
-				/>
-			)}
-			{/* Main Content */}
-			<main className="flex-1 flex flex-col h-[82.1vh] bg-gradient-to-b from-white to-blue-50">
+
+			{/* Main Chat Area */}
+			<main className="flex-1 flex flex-col h-full overflow-hidden relative bg-white">
 				{/* Mobile Header */}
-				<header className="md:hidden flex items-center justify-between p-4 bg-white/70 backdrop-blur-lg border-b border-gray-200">
-					<button onClick={() => setSidebarOpen(!isSidebarOpen)}>
-						<MenuIcon className="w-6 h-6 text-gray-600" />
+				<div className="md:hidden flex items-center justify-between p-4 border-b border-gray-100 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 z-10 sticky top-0">
+					<button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full">
+						<MenuIcon className="w-6 h-6" />
 					</button>
-					<h1 className="text-lg font-semibold truncate text-gray-800">
-						{activeConversationId
+					<span className="font-semibold text-gray-800 truncate max-w-[200px]">
+                        {activeConversationId
 							? conversations.find((c) => c.id === activeConversationId)?.title
 							: "New Chat"}
-					</h1>
-					<div className="w-6" /> {/* Spacer */}
-				</header>
-
-				{/* Chat Messages */}
-				<div className="flex-1 p-6 overflow-y-auto pb-24 [mask-image:linear-gradient(to_bottom,black_calc(100%-6rem),transparent)]">
-					<div className="max-w-4xl mx-auto">
-						{messages.length === 0 && !isLoading && (
-							<div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-								<Sparkles className="w-16 h-16 mb-4 text-blue-400" />
-								<h2 className="text-2xl font-semibold text-gray-700">
-									Start a new conversation
-								</h2>
-								<p>Ask me anything about your subjects!</p>
-							</div>
-						)}
-						{messages.map((msg, index) => (
-							<div
-								key={index}
-								className={`flex my-5 gap-3 ${
-									msg.role === "user" ? "justify-end" : "justify-start"
-								}`}>
-								<div
-									className={`max-w-2xl p-4 rounded-2xl shadow-md ${
-										msg.role === "user"
-											? "bg-blue-500 text-white rounded-br-lg"
-											: "bg-white text-gray-800 rounded-bl-lg"
-									}`}>
-									{msg.role === "assistant" ? (
-										<StyledMarkdown content={msg.content} />
-									) : (
-										<>
-											{msg.attachments && msg.attachments.length > 0 && (
-												<div className="flex flex-wrap gap-2 mb-2">
-													{msg.attachments.map((att, idx) => (
-														<div
-															key={idx}
-															className="flex items-center bg-blue-400/80 rounded-lg px-2 py-1 text-sm">
-															<FileIcon className="w-4 h-4 mr-2" />
-															<span>{att.name}</span>
-														</div>
-													))}
-												</div>
-											)}
-											<p>{msg.content}</p>
-										</>
-									)}
-									{msg.sources && msg.sources.length > 0 && (
-										<div className="mt-4 pt-3 border-t border-blue-400/50">
-											<h4 className="font-semibold text-sm mb-1">Sources:</h4>
-											<ul className="text-xs list-disc list-inside space-y-1">
-												{msg.sources.map((source, idx) => (
-													<li key={idx}>
-														Book: {source.title}, Page: {source.page}
-													</li>
-												))}
-											</ul>
-										</div>
-									)}
-								</div>
-							</div>
-						))}
-						{isLoading && (
-							<div className="flex justify-start">
-								<div className="p-4 rounded-2xl shadow-md bg-white text-gray-800 rounded-bl-none">
-									<div className="flex items-center space-x-2">
-										<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-										<div
-											className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
-											style={{ animationDelay: "0.2s" }}
-										/>
-										<div
-											className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"
-											style={{ animationDelay: "0.4s" }}
-										/>
-									</div>
-								</div>
-							</div>
-						)}
-					</div>
+                    </span>
+                    <div className="w-8"></div> {/* Spacer for centering */}
 				</div>
 
-				{/* User Input Form */}
-				<div className="p-4 bg-gradient-to-t from-white/50 to-transparent">
+				{/* Messages Container */}
+				<div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
+                    <div className="max-w-4xl mx-auto flex flex-col min-h-full">
+                        {messages.length === 0 && !isLoading && (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-gray-500 mt-10 md:mt-0">
+                                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-6 animate-in zoom-in duration-300">
+                                    <Sparkles className="w-10 h-10 text-blue-500" />
+                                </div>
+                                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
+                                    How can I help you today?
+                                </h2>
+                                <p className="max-w-md mx-auto text-gray-500 text-sm md:text-base">
+                                    Ask me anything about your subjects, upload notes, or start a voice conversation.
+                                </p>
+                            </div>
+                        )}
+
+                        {messages.map((msg, index) => (
+                            <div
+                                key={index}
+                                className={`flex mb-6 ${
+                                    msg.role === "user" ? "justify-end" : "justify-start"
+                                }`}>
+                                <div
+                                    className={`relative px-5 py-3.5 shadow-sm max-w-[90%] md:max-w-2xl text-sm md:text-base leading-relaxed ${
+                                        msg.role === "user"
+                                            ? "bg-blue-600 text-white rounded-[20px] rounded-br-sm"
+                                            : "bg-gray-100 text-gray-800 rounded-[20px] rounded-bl-sm border border-gray-200/50"
+                                    }`}>
+                                    {msg.role === "assistant" ? (
+                                        <StyledMarkdown content={msg.content} />
+                                    ) : (
+                                        <>
+                                            {msg.attachments && msg.attachments.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 mb-3">
+                                                    {msg.attachments.map((att, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            className="flex items-center bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs border border-white/10">
+                                                            <FileIcon className="w-3 h-3 mr-2 opacity-70" />
+                                                            <span className="truncate max-w-[150px]">{att.name}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                                        </>
+                                    )}
+
+                                    {msg.sources && msg.sources.length > 0 && (
+                                        <div className="mt-3 pt-3 border-t border-gray-300/30">
+                                            <p className="text-xs font-semibold mb-1 opacity-70">Sources:</p>
+                                            <ul className="text-xs space-y-1 opacity-80">
+                                                {msg.sources.map((source, idx) => (
+                                                    <li key={idx} className="flex items-center">
+                                                        <span className="w-1 h-1 bg-current rounded-full mr-2" />
+                                                        {source.title} (Pg. {source.page})
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+
+                        {isLoading && (
+                            <div className="flex justify-start mb-6">
+                                <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-bl-sm flex items-center gap-1.5 shadow-sm border border-gray-200/50">
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                </div>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+				</div>
+
+				{/* Input Area */}
+				<div className="p-3 md:p-4 bg-white border-t border-gray-100 relative z-20">
 					<div className="max-w-4xl mx-auto">
-						{/* Attached Files Display */}
-						<div className="flex flex-wrap gap-2 mb-2">
-							{attachedFiles.map((file, index) => (
-								<div
-									key={index}
-									className="flex items-center bg-gray-200 rounded-lg pl-2 pr-1 py-1 text-sm">
-									<FileIcon className="w-4 h-4 mr-2 text-gray-600" />
-									<span className="truncate max-w-xs">{file.file.name}</span>
-									{file.status === "processing" && (
-										<Loader className="w-4 h-4 ml-2 animate-spin" />
-									)}
-									{file.status === "error" && (
-										<span className="text-red-500 ml-2 text-xs">
-											{file.error}
-										</span>
-									)}
-									<button
-										onClick={() => removeFile(file.file)}
-										className="ml-1 p-0.5 rounded-full hover:bg-gray-300">
-										<X className="w-3 h-3" />
-									</button>
-								</div>
-							))}
-						</div>
+                        {/* File Attachments Preview */}
+						{attachedFiles.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3 px-1">
+                                {attachedFiles.map((file, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex items-center bg-gray-100 border border-gray-200 rounded-lg pl-3 pr-1 py-1.5 text-sm animate-in fade-in slide-in-from-bottom-2">
+                                        <FileIcon className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                                        <span className="truncate max-w-[100px] md:max-w-xs text-gray-700 font-medium text-xs md:text-sm">{file.file.name}</span>
+                                        {file.status === "processing" && (
+                                            <Loader className="w-3 h-3 ml-2 animate-spin text-blue-500" />
+                                        )}
+                                        {file.status === "error" && (
+                                            <span className="text-red-500 ml-2 text-xs">Error</span>
+                                        )}
+                                        <button
+                                            onClick={() => removeFile(file.file)}
+                                            className="ml-2 p-1 hover:bg-gray-200 rounded-full text-gray-500 transition-colors">
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
 						<form
 							onSubmit={handleSubmit}
-							className="flex items-center bg-white rounded-full shadow-md border border-gray-200">
+							className="flex items-end gap-2 bg-gray-50 p-1.5 rounded-[26px] border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500/50 transition-all">
 							<input
 								type="file"
 								ref={fileInputRef}
@@ -797,50 +833,66 @@ export default function PremiumChatPage() {
 								type="button"
 								onClick={() => fileInputRef.current?.click()}
 								disabled={isUploading}
-								className="m-1.5 p-3 text-gray-500 rounded-full hover:bg-gray-100 disabled:opacity-50 transition-all duration-200">
+								className="p-3 text-gray-500 rounded-full hover:bg-white hover:shadow-sm hover:text-blue-500 transition-all disabled:opacity-50 flex-shrink-0 h-[46px] w-[46px] flex items-center justify-center">
 								{isUploading ? (
 									<Loader className="w-5 h-5 animate-spin" />
 								) : (
 									<Paperclip className="w-5 h-5" />
 								)}
 							</button>
-							<input
+
+                            <input
 								type="text"
 								value={userInput}
 								onChange={(e) => setUserInput(e.target.value)}
-								placeholder="Ask your AI teacher a question..."
-								className="flex-1 p-4 bg-transparent focus:ring-0 focus:outline-none"
+								placeholder="Ask anything..."
+								className="flex-1 py-3 bg-transparent border-none focus:ring-0 text-gray-800 placeholder:text-gray-400 text-base max-h-[100px] overflow-y-auto"
 								disabled={isLoading || isUploading}
+                                style={{ minHeight: '44px' }}
 							/>
-							<button
-								type="button"
-								onMouseDown={startRecording}
-								onMouseUp={stopRecording}
-								onTouchStart={startRecording}
-								onTouchEnd={stopRecording}
-								className={`m-1.5 p-3 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg ${
-									isRecording
-										? "bg-red-500 animate-pulse"
-										: isLiveChatActive
-										? "bg-yellow-500"
-										: "bg-green-500 hover:bg-green-600"
-								}`}
-							>
-								<Mic className="w-5 h-5" />
-							</button>
-							<button
-								type="submit"
-								className="m-1.5 p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg"
-								disabled={
-									isLoading ||
-									isUploading ||
-									!userInput.trim() ||
-									(attachedFiles.length > 0 &&
-										attachedFiles.some((f) => f.status !== "completed"))
-								}>
-								<Send className="w-5 h-5" />
-							</button>
+
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                                <button
+                                    type="button"
+                                    onMouseDown={startRecording}
+                                    onMouseUp={stopRecording}
+                                    onTouchStart={startRecording}
+                                    onTouchEnd={stopRecording}
+                                    className={`p-3 rounded-full transition-all duration-200 flex items-center justify-center h-[46px] w-[46px] ${
+                                        isRecording
+                                            ? "bg-red-100 text-red-600 animate-pulse"
+                                            : isLiveChatActive
+                                            ? "bg-amber-100 text-amber-600"
+                                            : "text-gray-500 hover:bg-white hover:shadow-sm hover:text-green-600"
+                                    }`}
+                                    title="Hold to speak"
+                                >
+                                    {isRecording ? <StopCircle className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    disabled={
+                                        isLoading ||
+                                        isUploading ||
+                                        !userInput.trim() ||
+                                        (attachedFiles.length > 0 &&
+                                            attachedFiles.some((f) => f.status !== "completed"))
+                                    }
+                                    className={`p-3 rounded-full flex items-center justify-center h-[46px] w-[46px] transition-all duration-200 shadow-sm ${
+                                        userInput.trim() || attachedFiles.length > 0
+                                            ? "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200"
+                                            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                    }`}>
+                                    <Send className="w-5 h-5" />
+                                </button>
+                            </div>
 						</form>
+                        <div className="text-center mt-2">
+                            <p className="text-[10px] text-gray-400">
+                                AI can make mistakes. Check important info.
+                            </p>
+                        </div>
 					</div>
 				</div>
 			</main>
