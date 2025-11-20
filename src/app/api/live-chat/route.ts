@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { GoogleGenerativeAI, Part } from "@google/generative-ai"
-import { TextToSpeechClient } from "@google-cloud/text-to-speech"
 
 export const dynamic = "force-dynamic"
 
@@ -61,7 +60,7 @@ export async function POST(req: NextRequest) {
 		])
 		const transcribedText = transcriptionResult.response.text()
 
-		const junkSubstrings = ["[no speech]", "[Music]"]
+		const junkSubstrings = ["[no speech]", "[Music]", "[electric drill sound]", "[non-speech audio]", "[Non-speech audio]", "[No speech detected]"]
 		if (
 			!transcribedText.trim() ||
 			junkSubstrings.some((sub) => transcribedText.includes(sub))
@@ -75,7 +74,7 @@ export async function POST(req: NextRequest) {
 			)
 		}
 
-		// 3. Get Contextual Answer from RAG Pipeline (by calling our own API)
+		// 3. Get Contextual Answer from RAG Pipeline
 		const ragResponse = await fetch(
 			new URL("/api/ask-teacher", req.nextUrl.origin),
 			{
@@ -104,38 +103,17 @@ export async function POST(req: NextRequest) {
 		const ragData = await ragResponse.json()
 		const ragAnswerText = ragData.answer
 
-		// 4. Convert RAG Text Answer to Speech using Google Cloud TTS
-		let audioContent
-		try {
-			const ttsClient = new TextToSpeechClient()
-			const request = {
-				input: { text: ragAnswerText },
-				voice: { languageCode: "en-US", ssmlGender: "NEUTRAL" as const },
-				audioConfig: { audioEncoding: "MP3" as const },
-			}
-			const [ttsResponse] = await ttsClient.synthesizeSpeech(request)
-			audioContent = ttsResponse.audioContent
-		} catch (ttsError: unknown) {
-			console.error("Google Cloud TTS Error:", ttsError)
-			let errorMessage = "Text-to-speech service is not configured correctly."
-			if (
-				ttsError instanceof Error &&
-				"message" in ttsError &&
-				typeof ttsError.message === "string" &&
-				ttsError.message.includes("Could not load the default credentials")
-			) {
-				errorMessage =
-					"Text-to-speech authentication failed. Please ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly."
-			}
-			return NextResponse.json(
-				{
-					error: errorMessage,
-					transcribedText: transcribedText, // Still return the text so it can be displayed
-					textResponse: ragAnswerText,
-				},
-				{ status: 500 }
-			)
-		}
+		// 4. Generate Audio Response using Gemini Audio Dialog Model
+		const audioDialogModel = genAI.getGenerativeModel({
+			model: "gemini-2.5-flash-native-audio-dialog",
+		})
+
+		const result = await audioDialogModel.generateContent(
+			`User query: ${transcribedText}\nExpected model response: ${ragAnswerText}`
+		)
+		const firstPart = result.response.candidates?.[0]?.content?.parts?.[0]
+		const audioContent =
+			firstPart && "audio" in firstPart ? firstPart.audio : undefined
 
 		if (!audioContent) {
 			return NextResponse.json(
@@ -154,10 +132,8 @@ export async function POST(req: NextRequest) {
 		headers.set("X-Transcribed-Text", encodeURIComponent(transcribedText))
 		headers.set("X-Text-Response", encodeURIComponent(ragAnswerText))
 
-		// Convert to ArrayBuffer to be compatible with NextResponse body
-		const audioBufferForResponse = Buffer.from(audioContent as Uint8Array)
-
-		return new NextResponse(audioBufferForResponse.buffer, { status: 200, headers })
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		return new NextResponse(audioContent as any, { status: 200, headers })
 	} catch (error: unknown) {
 		console.error("[/api/live-chat] Error:", error)
 		const errorMessage =
