@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase-client"
 import { User } from "@supabase/supabase-js"
 import StyledMarkdown from "@/components/StyledMarkdown"
 import PurchaseButton from "@/components/PurchaseButton"
+import { useLiveApi } from "@/hooks/use-live-api"
 import {
 	Plus,
 	MessageSquare,
@@ -60,7 +61,7 @@ export default function PremiumChatPage() {
 	const [editingTitle, setEditingTitle] = useState("")
 	const [summary, setSummary] = useState<string | null>(null)
 	const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([])
-	const [isRecording, setIsRecording] = useState(false)
+	// const [isRecording, setIsRecording] = useState(false)
 	const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>(null)
 	const [isLiveChatActive, setIsLiveChatActive] = useState(false)
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -68,6 +69,98 @@ export default function PremiumChatPage() {
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	const isUploading = attachedFiles.some((f) => f.status === "processing")
+
+	// --- Live API Hook ---
+	// We stream audio from Gemini and update the UI
+	const audioContextRef = useRef<AudioContext | null>(null);
+	const nextStartTimeRef = useRef<number>(0);
+
+	const {
+		status: liveStatus,
+		connect: connectLive,
+		disconnect: disconnectLive,
+		isRecording: isLiveRecording,
+		startRecording: startLiveRecording,
+		stopRecording: stopLiveRecording,
+		error: liveError,
+	} = useLiveApi({
+		onTextReceived: (text, role) => {
+			setMessages((prev) => {
+				// If the last message is from the same role and it's "streaming" (we could add a streaming flag),
+				// we might append. But Gemini sends partial text updates?
+				// Actually, usually it sends complete chunks.
+				// For now, let's just append if it's a new turn, or update if it's the same turn?
+				// To simplify: if the last message is assistant, append to it.
+				const lastMsg = prev[prev.length - 1];
+				if (lastMsg && lastMsg.role === role) {
+					return [
+						...prev.slice(0, -1),
+						{ ...lastMsg, content: lastMsg.content + text },
+					];
+				} else {
+					return [...prev, { role, content: text }];
+				}
+			});
+		},
+		onAudioReceived: async (base64Audio) => {
+			// Play Audio
+			// We need to decode and schedule playback
+			if (!audioContextRef.current) {
+				audioContextRef.current = new AudioContext({ sampleRate: 24000 }); // Gemini usually outputs 24kHz
+			}
+			const ctx = audioContextRef.current;
+			const audioData = Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0)).buffer;
+
+			try {
+				// Audio Data is usually raw PCM or similar?
+				// Wait, the output format of Gemini Live WebSocket defaults to PCM 24kHz or similar.
+				// If it's raw PCM (Little Endian 16-bit), we need to convert manually.
+				// decodeAudioData expects a full file format (wav/mp3) or specific chunks.
+
+				// For raw PCM:
+				const int16 = new Int16Array(audioData);
+				const float32 = new Float32Array(int16.length);
+				for(let i=0; i<int16.length; i++) {
+					float32[i] = int16[i] / 32768;
+				}
+
+				const buffer = ctx.createBuffer(1, float32.length, 24000);
+				buffer.copyToChannel(float32, 0);
+
+				const source = ctx.createBufferSource();
+				source.buffer = buffer;
+				source.connect(ctx.destination);
+
+				const now = ctx.currentTime;
+				// Schedule safely
+				const startTime = Math.max(now, nextStartTimeRef.current);
+				source.start(startTime);
+				nextStartTimeRef.current = startTime + buffer.duration;
+
+			} catch (e) {
+				console.error("Audio playback error", e);
+			}
+		}
+	});
+
+	// Auto-connect/disconnect based on need?
+	// Or manual connect?
+	// For "Hold to Talk", we might keep the socket open or open on press.
+	// Keeping it open is better for latency.
+
+	useEffect(() => {
+		if (isPremium) {
+			// Connect when premium page loads?
+			// Or only when user clicks?
+			// Let's connect on first mic interaction to save resources, or just connect now.
+			// User requested "WebSocket", so let's connect.
+			// But check for API Key existence first? Handled in hook.
+			connectLive();
+		}
+		return () => {
+			disconnectLive();
+		};
+	}, [isPremium, connectLive, disconnectLive]);
 
 	const supabase = createClient()
 
@@ -293,122 +386,19 @@ export default function PremiumChatPage() {
 		setAttachedFiles((prev) => prev.filter((f) => f.file !== fileToRemove))
 	}
 
-	// --- Live Audio Chat Handlers ---
+	// --- Live Audio Chat Handlers (WebSocket) ---
 
-	const startRecording = async () => {
-		if (audioPlayer) {
-			audioPlayer.pause()
-			setAudioPlayer(null)
+	const handleStartRecording = async () => {
+		// Ensure connected
+		if (liveStatus === "disconnected" || liveStatus === "error") {
+			await connectLive();
 		}
-		setIsLiveChatActive(true) // Show AI is thinking/responding
-		try {
-			const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-			mediaRecorderRef.current = new MediaRecorder(stream)
-			audioChunksRef.current = []
-			mediaRecorderRef.current.ondataavailable = (event) => {
-				audioChunksRef.current.push(event.data)
-			}
-			mediaRecorderRef.current.onstop = handleAudioSubmit
-			mediaRecorderRef.current.start()
-			setIsRecording(true)
-		} catch (err) {
-			console.error("Error accessing microphone:", err)
-			alert("Could not access microphone. Please enable it in your browser settings.")
-			setIsLiveChatActive(false)
-		}
+		await startLiveRecording();
 	}
 
-	const stopRecording = () => {
-		if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-			mediaRecorderRef.current.stop()
-			setIsRecording(false)
-		}
+	const handleStopRecording = () => {
+		stopLiveRecording();
 	}
-
-	// This effect ensures the microphone stream is stopped after recording finishes.
-	useEffect(() => {
-		if (!isRecording && mediaRecorderRef.current?.stream) {
-			mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop())
-		}
-	}, [isRecording])
-
-	const handleAudioSubmit = async () => {
-		if (audioChunksRef.current.length === 0) {
-			setIsLiveChatActive(false)
-			return
-		}
-
-		const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" })
-		audioChunksRef.current = []
-
-		const formData = new FormData()
-		formData.append("file", audioBlob, "user-audio.webm")
-		// Send current history and summary for context
-		const historyToSend = summary
-			? messages.slice(messages.length - (messages.length % 10))
-			: messages
-		formData.append("history", JSON.stringify(historyToSend))
-		formData.append("summary", summary || "")
-
-		try {
-			const response = await fetch("/api/live-chat", {
-				method: "POST",
-				body: formData,
-			})
-
-			if (!response.ok) {
-				const errorData = await response.json()
-				throw new Error(
-					errorData.error || "Live chat API request failed"
-				)
-			}
-
-			// Extract text from headers to update chat history
-			const transcribedText = decodeURIComponent(
-				response.headers.get("X-Transcribed-Text") || ""
-			)
-			const textResponse = decodeURIComponent(
-				response.headers.get("X-Text-Response") || ""
-			)
-
-			if (transcribedText) {
-				const userMessage: Message = { role: "user", content: transcribedText }
-				const assistantMessage: Message = {
-					role: "assistant",
-					content: textResponse,
-				}
-				setMessages((prev) => [...prev, userMessage, assistantMessage])
-			}
-
-
-			const audioBlobResponse = await response.blob()
-			const audioUrl = URL.createObjectURL(audioBlobResponse)
-			const newAudioPlayer = new Audio(audioUrl)
-			setAudioPlayer(newAudioPlayer) // Save player to state to allow interruption
-			newAudioPlayer.play()
-			newAudioPlayer.onended = () => {
-				setIsLiveChatActive(false)
-			}
-		} catch (error) {
-			console.error("Error during live chat:", error)
-			const errorMessage: Message = {
-				role: "assistant",
-				content: "Sorry, I had trouble with that request. Please try again.",
-			}
-			setMessages((prev) => [...prev, errorMessage])
-			setIsLiveChatActive(false)
-		}
-	}
-
-	// Cleanup effect for audio player
-	useEffect(() => {
-		return () => {
-			if (audioPlayer) {
-				audioPlayer.pause()
-				URL.revokeObjectURL(audioPlayer.src)
-			}
-		}
-	}, [audioPlayer])
 
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -814,19 +804,20 @@ export default function PremiumChatPage() {
 							/>
 							<button
 								type="button"
-								onMouseDown={startRecording}
-								onMouseUp={stopRecording}
-								onTouchStart={startRecording}
-								onTouchEnd={stopRecording}
+								onMouseDown={handleStartRecording}
+								onMouseUp={handleStopRecording}
+								onTouchStart={handleStartRecording}
+								onTouchEnd={handleStopRecording}
+								title={liveError || "Hold to speak"}
 								className={`m-1.5 p-3 text-white rounded-full transition-all duration-200 shadow-md hover:shadow-lg ${
-									isRecording
+									isLiveRecording
 										? "bg-red-500 animate-pulse"
-										: isLiveChatActive
-										? "bg-yellow-500"
-										: "bg-green-500 hover:bg-green-600"
+										: liveStatus === "connected"
+										? "bg-green-500 hover:bg-green-600"
+										: "bg-gray-400"
 								}`}
 							>
-								<Mic className="w-5 h-5" />
+								{liveStatus === "connecting" ? <Loader className="w-5 h-5 animate-spin" /> : <Mic className="w-5 h-5" />}
 							</button>
 							<button
 								type="submit"
