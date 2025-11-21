@@ -662,10 +662,10 @@ export default function PremiumChatPage() {
 								</div>
 							))}
 						</div>
-						<div className="flex items-center gap-2 md:gap-4">
+						<div className="flex flex-col-reverse md:flex-row items-center gap-2 md:gap-4">
 							<form
 								onSubmit={handleSubmit}
-								className="flex-1 flex items-center bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
+								className="flex-1 flex items-center bg-white rounded-full shadow-md border border-gray-200 overflow-hidden w-full">
 								<input
 									type="file"
 									ref={fileInputRef}
@@ -709,7 +709,7 @@ export default function PremiumChatPage() {
 							<button
 								type="button"
 								onClick={() => setIsLiveActive(true)}
-								className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 transition-transform duration-200 active:scale-95 hover:scale-110"
+								className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 transition-transform duration-200 active:scale-95 hover:scale-110 mb-2 md:mb-0"
 								title="Start Live Session"
 							>
 								<LiveIcon className="w-full h-full" />
