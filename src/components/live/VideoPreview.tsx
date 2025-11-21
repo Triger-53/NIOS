@@ -103,7 +103,7 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({ isActive, onFrame, onError 
         playsInline
         // Mirror the video for the user so it feels natural (Selfie mirror)
         // Object-cover ensures it fills the screen
-        className="w-full h-full object-cover transform -scale-x-100 opacity-90"
+        className="w-full h-full object-cover opacity-90"
       />
       <canvas ref={canvasRef} className="hidden" />
       {/* Vignette overlay for cinematic focus */}
