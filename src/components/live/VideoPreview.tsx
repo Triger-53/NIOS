@@ -23,7 +23,7 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({ isActive, onFrame, onError 
           // Since user said "Video Audio", let's default to environment as they likely want to show the world.
           const stream = await navigator.mediaDevices.getUserMedia({
             video: {
-              facingMode: 'user', // Changed to user for "FaceTime" feel, or toggleable in real app
+              facingMode: 'environment', // Changed to user for "FaceTime" feel, or toggleable in real app
               width: { ideal: 1280 },
               height: { ideal: 720 }
             }
