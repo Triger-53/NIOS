@@ -709,10 +709,10 @@ export default function PremiumChatPage() {
 							<button
 								type="button"
 								onClick={() => setIsLiveActive(true)}
-								className="flex-shrink-0 w-11 h-11 md:w-12 md:h-12 flex items-center justify-center text-white rounded-full hover:bg-rose-300 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+								className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 transition-transform duration-200 active:scale-95 hover:scale-110"
 								title="Start Live Session"
 							>
-								<LiveIcon className="w-20 h-20" />
+								<LiveIcon className="w-full h-full" />
 							</button>
 						</div>
 					</div>

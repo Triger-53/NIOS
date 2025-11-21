@@ -48,7 +48,7 @@ const LiveIcon = ({ className }: { className?: string }) => (
 			<line x1="12" y1="14" x2="28" y2="14" stroke="#1E3A8A" strokeWidth="2" opacity="0.7" />
 			<line x1="12" y1="21" x2="28" y2="21" stroke="#1E3A8A" strokeWidth="2" opacity="0.7" />
 			<line x1="12" y1="28" x2="28" y2="28" stroke="#1E3A8A" strokeWidth="2" opacity="0.7" />
-			<rect x="18" y="36" width="8" height="12" rx="3" fill="#1E3A8A" />
+			<rect x="16.1" y="36" width="8" height="12" rx="3" fill="#1E3A8A" />
 		</g>
 
 		{/* LIVE Red Dot (half in, half out) */}
