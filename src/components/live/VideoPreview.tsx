@@ -5,9 +5,10 @@ import { blobToBase64 } from '@/lib/audioUtils';
 interface VideoPreviewProps {
   isActive: boolean;
   onFrame: (base64: string) => void;
+  onError?: (error: string) => void;
 }
 
-const VideoPreview: React.FC<VideoPreviewProps> = ({ isActive, onFrame }) => {
+const VideoPreview: React.FC<VideoPreviewProps> = ({ isActive, onFrame, onError }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const intervalRef = useRef<number | null>(null);
@@ -34,6 +35,9 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({ isActive, onFrame }) => {
           }
         } catch (err) {
           console.error("Error accessing camera:", err);
+          if (onError) {
+            onError(err instanceof Error ? err.message : String(err));
+          }
         }
       };
       startVideo();
@@ -52,7 +56,7 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({ isActive, onFrame }) => {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
-  }, [isActive]);
+  }, [isActive, onError]);
 
   // Frame capture loop (10 FPS)
   useEffect(() => {

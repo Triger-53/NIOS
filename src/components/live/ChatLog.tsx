@@ -31,10 +31,10 @@ const ChatLog: React.FC<ChatLogProps> = ({ messages }) => {
           <div
             className={`relative max-w-[85%] px-6 py-4 text-[15px] leading-relaxed backdrop-blur-xl shadow-sm transition-all duration-500 ease-out ${
               msg.role === 'user'
-                ? 'bg-white/10 text-white rounded-2xl rounded-tr-sm border border-white/10'
+                ? 'bg-blue-500 text-white rounded-2xl rounded-tr-sm'
                 : msg.role === 'system'
                 ? 'w-full text-center bg-transparent text-slate-400 text-xs font-mono py-2'
-                : 'bg-black/40 text-slate-100 rounded-2xl rounded-tl-sm border border-white/5'
+                : 'bg-slate-600 text-slate-50 rounded-2xl rounded-tl-sm'
             }`}
           >
             {msg.text}

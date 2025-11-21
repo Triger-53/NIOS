@@ -18,9 +18,10 @@ import {
 	Paperclip,
 	File as FileIcon,
 	X,
-	Mic,
-} from "lucide-react"
+	Radio,
+} from "lucide-react" // Radio will be removed
 import LiveOverlay from "@/components/live/LiveOverlay"
+import LiveIcon from "@/components/LiveIcon"
 
 // --- Type Definitions ---
 interface Message {
@@ -661,59 +662,59 @@ export default function PremiumChatPage() {
 								</div>
 							))}
 						</div>
-						<form
-							onSubmit={handleSubmit}
-							className="flex items-center bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
-							<input
-								type="file"
-								ref={fileInputRef}
-								multiple
-								onChange={handleFileChange}
-								className="hidden"
-								accept="image/png,image/jpeg,application/pdf,text/plain,audio/mpeg,audio/wav,video/mp4,video/webm"
-							/>
-							<button
-								type="button"
-								onClick={() => fileInputRef.current?.click()}
-								disabled={isUploading}
-								className="m-1 p-2 md:m-1.5 md:p-3 text-gray-500 rounded-full hover:bg-gray-100 disabled:opacity-50 transition-all duration-200 shrink-0">
-								{isUploading ? (
-									<Loader className="w-5 h-5 animate-spin" />
-								) : (
-									<Paperclip className="w-5 h-5" />
-								)}
-							</button>
-							<input
-								type="text"
-								value={userInput}
-								onChange={(e) => setUserInput(e.target.value)}
-								placeholder="Ask your AI teacher..."
-								className="flex-1 py-3 px-2 md:p-4 bg-transparent focus:ring-0 focus:outline-none min-w-0 text-sm md:text-base"
-								disabled={isLoading || isUploading}
-							/>
-							<button
-								type="submit"
-								className="m-1 p-2 md:m-1.5 md:p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg shrink-0"
-								disabled={
-									isLoading ||
-									isUploading ||
-									!userInput.trim() ||
-									(attachedFiles.length > 0 &&
-										attachedFiles.some((f) => f.status !== "completed"))
-								}>
-								<Send className="w-5 h-5" />
-							</button>
-
-							{/* Live Button */}
+						<div className="flex items-center gap-2 md:gap-4">
+							<form
+								onSubmit={handleSubmit}
+								className="flex-1 flex items-center bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
+								<input
+									type="file"
+									ref={fileInputRef}
+									multiple
+									onChange={handleFileChange}
+									className="hidden"
+									accept="image/png,image/jpeg,application/pdf,text/plain,audio/mpeg,audio/wav,video/mp4,video/webm"
+								/>
+								<button
+									type="button"
+									onClick={() => fileInputRef.current?.click()}
+									disabled={isUploading}
+									className="p-2 md:p-3 text-gray-500 rounded-full hover:bg-gray-100 disabled:opacity-50 transition-colors duration-200 shrink-0 ml-1.5">
+									{isUploading ? (
+										<Loader className="w-5 h-5 animate-spin" />
+									) : (
+										<Paperclip className="w-5 h-5" />
+									)}
+								</button>
+								<input
+									type="text"
+									value={userInput}
+									onChange={(e) => setUserInput(e.target.value)}
+									placeholder="Ask your AI teacher..."
+									className="flex-1 py-3 px-2 bg-transparent focus:ring-0 focus:outline-none min-w-0 text-sm md:text-base"
+									disabled={isLoading || isUploading}
+								/>
+								<button
+									type="submit"
+									className="m-1 p-2 md:p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors duration-200 shadow-sm hover:shadow-md shrink-0"
+									disabled={
+										isLoading ||
+										isUploading ||
+										!userInput.trim() ||
+										(attachedFiles.length > 0 &&
+											attachedFiles.some((f) => f.status !== "completed"))
+									}>
+									<Send className="w-5 h-5" />
+								</button>
+							</form>
 							<button
 								type="button"
 								onClick={() => setIsLiveActive(true)}
-								className="m-1 p-2 md:m-1.5 md:p-3 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-all duration-200 shadow-md hover:shadow-lg shrink-0 animate-pulse"
+								className="flex-shrink-0 w-11 h-11 md:w-12 md:h-12 flex items-center justify-center text-white rounded-full hover:bg-rose-300 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
 								title="Start Live Session"
 							>
-								<Mic className="w-5 h-5" />
+								<LiveIcon className="w-20 h-20" />
 							</button>
-						</form>
+						</div>
 					</div>
 				</div>
 			</main>

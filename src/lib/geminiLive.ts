@@ -18,6 +18,8 @@ export class GeminiLiveClient {
   private processor: ScriptProcessorNode | null = null;
   private inputAnalyser: AnalyserNode | null = null;
   private outputAnalyser: AnalyserNode | null = null;
+  private micStream: MediaStream | null = null;
+
 
   private nextStartTime: number = 0;
   private sources: Set<AudioBufferSourceNode> = new Set();
@@ -61,22 +63,23 @@ export class GeminiLiveClient {
 
       // Get Audio Stream
       const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.micStream = audioStream;  // <-- save mic stream for cleanup
 
       // Define the Tool
       const searchBooksTool: Tool = {
         functionDeclarations: [{
-            name: "search_books",
-            description: "Searches NIOS text books for relevant information to answer student questions. Use this tool when the user asks an educational question or about specific topics.",
-            parameters: {
-                type: Type.OBJECT,
-                properties: {
-                    query: {
-                        type: Type.STRING,
-                        description: "The search query based on the user's question."
-                    }
-                },
-                required: ["query"]
-            }
+          name: "search_books",
+          description: "Searches NIOS text books for relevant information to answer student questions. Use this tool when the user asks an educational question or about specific topics.",
+          parameters: {
+            type: Type.OBJECT,
+            properties: {
+              query: {
+                type: Type.STRING,
+                description: "The search query based on the user's question."
+              }
+            },
+            required: ["query"]
+          }
         }]
       };
 
@@ -237,41 +240,41 @@ If the user speaks another language, politely inform them in English and Hindi t
 
     // Handle Tool Call
     if (message.toolCall) {
-        const functionCalls = message.toolCall.functionCalls;
-        if (functionCalls && functionCalls.length > 0) {
-            const responses = [];
-            for (const call of functionCalls) {
-                if (call.name === 'search_books') {
-                    const query = call.args ? call.args['query'] : '';
-                    this.logCallback('system', `Searching books for: ${query}`);
-                    try {
-                        const apiResponse = await fetch('/api/tools/search-books', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ query })
-                        });
-                        const data = await apiResponse.json();
-                        responses.push({
-                            name: 'search_books',
-                            id: call.id,
-                            response: { result: data.results }
-                        });
-                    } catch (e) {
-                        console.error('Tool execution error:', e);
-                        responses.push({
-                            name: 'search_books',
-                            id: call.id,
-                            response: { error: 'Failed to search books' }
-                        });
-                    }
-                }
+      const functionCalls = message.toolCall.functionCalls;
+      if (functionCalls && functionCalls.length > 0) {
+        const responses = [];
+        for (const call of functionCalls) {
+          if (call.name === 'search_books') {
+            const query = call.args ? call.args['query'] : '';
+            this.logCallback('system', `Searching books for: ${query}`);
+            try {
+              const apiResponse = await fetch('/api/tools/search-books', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+              });
+              const data = await apiResponse.json();
+              responses.push({
+                name: 'search_books',
+                id: call.id,
+                response: { result: data.results }
+              });
+            } catch (e) {
+              console.error('Tool execution error:', e);
+              responses.push({
+                name: 'search_books',
+                id: call.id,
+                response: { error: 'Failed to search books' }
+              });
             }
-
-            // Send tool response back to model
-            if (this.session) {
-                await this.session.sendToolResponse({ functionResponses: responses });
-            }
+          }
         }
+
+        // Send tool response back to model
+        if (this.session) {
+          await this.session.sendToolResponse({ functionResponses: responses });
+        }
+      }
     }
 
     const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
@@ -290,8 +293,8 @@ If the user speaks another language, politely inform them in English and Hindi t
     }
 
     if (message.serverContent?.interrupted) {
-        this.stopAllAudio();
-        this.logCallback('system', 'Model interrupted');
+      this.stopAllAudio();
+      this.logCallback('system', 'Model interrupted');
     }
   }
 
@@ -322,7 +325,7 @@ If the user speaks another language, politely inform them in English and Hindi t
   private stopAllAudio() {
     this.sources.forEach(source => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      try { source.stop(); } catch (_e) {}
+      try { source.stop(); } catch (_e) { }
     });
     this.sources.clear();
     this.nextStartTime = 0;
@@ -335,11 +338,16 @@ If the user speaks another language, politely inform them in English and Hindi t
       // Attempt to close the session if close method exists on the type
       // The current type definition might not expose close directly depending on SDK version
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      try { (this.session as any).close(); } catch(e) { console.warn(e); }
+      try { (this.session as any).close(); } catch (e) { console.warn(e); }
       this.session = null;
     }
 
     this.stopAllAudio();
+    if (this.micStream) {
+      this.micStream.getTracks().forEach(t => t.stop());   // <-- turns off mic
+      this.micStream = null;
+    }
+
 
     if (this.inputSource) this.inputSource.disconnect();
     if (this.processor) {
