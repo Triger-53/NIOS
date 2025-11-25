@@ -1,4 +1,5 @@
 // src/components/StyledMarkdown.tsx
+"use client";
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -6,6 +7,57 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Check, Copy } from 'lucide-react';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CodeBlock = ({ inline, className, children, ...props }: any) => {
+  const match = /language-(\w+)/.exec(className || '');
+  const [copied, setCopied] = useState(false);
+  const codeString = String(children).replace(/\n$/, '');
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(codeString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return !inline && match ? (
+    <div className="relative my-6 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-[#1e1e1e]">
+      <div className="flex items-center justify-between px-4 py-2 bg-[#2d2d2d] border-b border-zinc-700">
+        <span className="text-xs font-medium text-zinc-400 lowercase">
+          {match[1]}
+        </span>
+        <button
+          onClick={handleCopy}
+          className="p-1.5 text-zinc-400 hover:text-zinc-100 transition-colors rounded-md hover:bg-zinc-700/50"
+          title="Copy code"
+        >
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+        </button>
+      </div>
+      <div className="overflow-x-auto">
+        <SyntaxHighlighter
+          style={vscDarkPlus}
+          language={match[1]}
+          PreTag="div"
+          customStyle={{
+            margin: 0,
+            padding: '1.5rem',
+            background: 'transparent',
+            fontSize: '0.875rem',
+            lineHeight: '1.5',
+          }}
+          {...props}
+        >
+          {codeString}
+        </SyntaxHighlighter>
+      </div>
+    </div>
+  ) : (
+    <code className={className} {...props}>
+      {children}
+    </code>
+  );
+};
 
 const StyledMarkdown = ({ content }: { content: string }) => {
   return (
@@ -26,55 +78,7 @@ const StyledMarkdown = ({ content }: { content: string }) => {
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          code({ node, inline, className, children, ...props }: any) {
-            const match = /language-(\w+)/.exec(className || '');
-            const [copied, setCopied] = useState(false);
-            const codeString = String(children).replace(/\n$/, '');
-
-            const handleCopy = () => {
-              navigator.clipboard.writeText(codeString);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            };
-
-            return !inline && match ? (
-              <div className="relative my-6 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-[#1e1e1e]">
-                <div className="flex items-center justify-between px-4 py-2 bg-[#2d2d2d] border-b border-zinc-700">
-                  <span className="text-xs font-medium text-zinc-400 lowercase">
-                    {match[1]}
-                  </span>
-                  <button
-                    onClick={handleCopy}
-                    className="p-1.5 text-zinc-400 hover:text-zinc-100 transition-colors rounded-md hover:bg-zinc-700/50"
-                    title="Copy code"
-                  >
-                    {copied ? <Check size={14} /> : <Copy size={14} />}
-                  </button>
-                </div>
-                <div className="overflow-x-auto">
-                  <SyntaxHighlighter
-                    style={vscDarkPlus}
-                    language={match[1]}
-                    PreTag="div"
-                    customStyle={{
-                      margin: 0,
-                      padding: '1.5rem',
-                      background: 'transparent',
-                      fontSize: '0.875rem',
-                      lineHeight: '1.5',
-                    }}
-                    {...props}
-                  >
-                    {codeString}
-                  </SyntaxHighlighter>
-                </div>
-              </div>
-            ) : (
-              <code className={className} {...props}>
-                {children}
-              </code>
-            );
-          },
+          code: CodeBlock
         }}
       >
         {content}
