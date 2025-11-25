@@ -1,65 +1,44 @@
-# Walkthrough - Fixing Build Errors
+# Walkthrough - Fixing Vercel Build Error
 
-I have fixed the build errors in the Next.js application.
+I have fixed the build error that was occurring on Vercel.
 
-## Changes
+## The Issue
 
-### 1. Fixed `StyledMarkdown.tsx`
+The build was failing with the error:
+```
+Error: `key_id` or `oauthToken` is mandatory
+```
+This was happening because the Razorpay SDK was being initialized at the top level of `src/app/api/razorpay/create-order/route.ts`. When Next.js builds the application, it may import this file. If the environment variables `NEXT_PUBLIC_RAZORPAY_KEY_ID` and `RAZORPAY_SECRET` are not present in the build environment (which is common for secrets), the initialization fails.
 
-The build was failing because `useState` was being used in a component that wasn't marked as a client component, and it was being used inside a render function passed to `ReactMarkdown`, which caused a hook violation.
+## The Fix
 
-I made the following changes to `src/components/StyledMarkdown.tsx`:
+I moved the Razorpay initialization inside the `POST` request handler. This ensures that the SDK is only initialized when the API endpoint is actually called at runtime, not during the build process.
 
-1.  Added `"use client"` directive to the top of the file.
-2.  Extracted the code renderer into a separate `CodeBlock` component.
-3.  Disabled the `@typescript-eslint/no-explicit-any` rule for the `CodeBlock` props to satisfy the linter.
+### Modified `src/app/api/razorpay/create-order/route.ts`
 
-```tsx
-// src/components/StyledMarkdown.tsx
-"use client";
-// ... imports
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+import Razorpay from "razorpay";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CodeBlock = ({ inline, className, children, ...props }: any) => {
-  // ... implementation
-};
+// REMOVED: Top-level initialization
+// const razorpay = new Razorpay({ ... });
 
-const StyledMarkdown = ({ content }: { content: string }) => {
-  return (
-    // ...
-      <ReactMarkdown
-        // ...
-        components={{
-          code: CodeBlock
-        }}
-      >
-        {content}
-      </ReactMarkdown>
-    // ...
-  );
-};
+export async function POST(request: NextRequest) {
+  // ADDED: Initialization inside the handler
+  const razorpay = new Razorpay({
+    key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+    key_secret: process.env.RAZORPAY_SECRET!,
+  });
+
+  const { amount, currency } = await request.json();
+  // ... rest of the function
+}
 ```
 
-## Verification Results
+## Verification
 
-### Automated Tests
+I checked other files for similar issues:
+- `src/app/api/razorpay/verify-payment/route.ts`: Uses `process.env.RAZORPAY_SECRET` inside the handler, so it is safe.
+- `src/components/PurchaseButton.tsx`: Uses `window.Razorpay` on the client side, so it is safe.
 
-I ran `npm run build` and it completed successfully.
-
-```bash
-> nios-app@0.1.0 build
-> next build
-
-   ▲ Next.js 15.5.4
-   - Environments: .env
-   - Experiments (use with caution):
-     · optimizePackageImports
-
-   Creating an optimized production build ...
-   
-   ...
-
-○  (Static)   prerendered as static content
-●  (SSG)      prerendered as static HTML (uses generateStaticParams)
-ƒ  (Dynamic)  server-rendered on demand
-```
+This change should resolve the Vercel build error.
