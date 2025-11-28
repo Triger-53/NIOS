@@ -60,7 +60,7 @@ export default async function ChapterPage({ params }: PageProps) {
 
 	return (
 		<main className="min-h-screen p-8">
-			<div className="bg-white p-8 rounded-lg shadow-lg">
+			<div className="bg-background p-8 rounded-lg shadow-lg">
 				<h1 className="text-3xl font-bold mb-4">
 					{data.title || chapterName.replace(".md", "")}
 				</h1>
