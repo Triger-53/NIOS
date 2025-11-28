@@ -38,7 +38,7 @@ export default function LoginForm() {
 			<h1 className="text-2xl font-bold mb-4">🔐 Login</h1>
 			<form onSubmit={handleSubmit} className="space-y-4">
 				<div>
-					<label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+					<label htmlFor="email" className="block text-sm font-medium text-foreground">Email</label>
 					<input
 						id="email"
 						name="email"
@@ -46,7 +46,7 @@ export default function LoginForm() {
 						placeholder="Email"
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
-						className="border p-2 w-full rounded"
+						className="border border-border bg-background text-foreground p-2 w-full rounded"
 						required
 					/>
 				</div>
@@ -59,7 +59,7 @@ export default function LoginForm() {
 						placeholder="Password"
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
-						className="border p-2 w-full rounded"
+						className="border border-border bg-background text-foreground p-2 w-full rounded"
 						required
 					/>
 				</div>
@@ -72,7 +72,7 @@ export default function LoginForm() {
 				{error && <p className="text-red-500">{error}</p>}
 			</form>
 			<div className="mt-4 text-center">
-				<p className="text-sm text-gray-600">
+				<p className="text-sm text-muted-foreground">
 					Don&apos;t have an account?{" "}
 					<a href={redirect ? `/register?redirect=${redirect}` : "/register"} className="text-blue-600 hover:underline">
 						Sign up

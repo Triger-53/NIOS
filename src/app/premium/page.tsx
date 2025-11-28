@@ -263,10 +263,10 @@ export default function PremiumChatPage() {
 					prev.map((f) =>
 						f.file === file
 							? {
-									...f,
-									status: "completed",
-									extractedText: data.text,
-							  }
+								...f,
+								status: "completed",
+								extractedText: data.text,
+							}
 							: f
 					)
 				)
@@ -415,22 +415,22 @@ export default function PremiumChatPage() {
 	// --- Render Logic ---
 	if (isPremium === null) {
 		return (
-			<div className="flex justify-center items-center h-screen bg-gray-50">
+			<div className="flex justify-center items-center h-screen bg-background">
 				<Loader className="w-8 h-8 animate-spin text-blue-500" />
-				<p className="ml-4 text-lg text-gray-600">Loading your experience...</p>
+				<p className="ml-4 text-lg text-muted-foreground">Loading your experience...</p>
 			</div>
 		)
 	}
 
 	if (!isPremium) {
 		return (
-			<div className="flex flex-col justify-center items-center h-screen text-center bg-gray-50 p-4">
-				<div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg">
+			<div className="flex flex-col justify-center items-center h-screen text-center bg-background p-4">
+				<div className="max-w-md w-full bg-card p-8 rounded-2xl shadow-lg">
 					<Sparkles className="w-16 h-16 mx-auto text-blue-500 mb-4" />
-					<h1 className="text-3xl font-bold text-gray-800 mb-2">
+					<h1 className="text-3xl font-bold text-foreground mb-2">
 						Unlock Your AI Teacher
 					</h1>
-					<p className="text-gray-600 mb-8">
+					<p className="text-muted-foreground mb-8">
 						Upgrade to Premium to get personalized help, ask questions, and get
 						deeper insights into your subjects.
 					</p>
@@ -447,14 +447,13 @@ export default function PremiumChatPage() {
 	}
 
 	return (
-		<div className="flex h-[calc(100dvh-12rem)] md:h-[calc(100dvh-8rem)] w-full bg-gray-50 text-gray-800 overflow-hidden">
+		<div className="flex h-[calc(100dvh-12rem)] md:h-[calc(100dvh-8rem)] w-full bg-background text-foreground overflow-hidden">
 			{/* Sidebar */}
 			<aside
-				className={`fixed top-0 left-0 h-full z-40 bg-white/80 backdrop-blur-md border-r border-gray-200 p-4 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:z-auto ${
-					isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-				} w-72 md:w-80 pt-24 md:pt-4 flex`}>
+				className={`fixed top-0 left-0 h-full z-40 bg-background/80 backdrop-blur-md border-r border-border p-4 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:z-auto ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+					} w-72 md:w-80 pt-24 md:pt-4 flex`}>
 				<div className="flex justify-between items-center mb-6">
-					<h2 className="text-2xl font-bold text-gray-800">History</h2>
+					<h2 className="text-2xl font-bold text-foreground">History</h2>
 					<button
 						onClick={handleNewConversation}
 						className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-all duration-200 shadow-md hover:shadow-lg">
@@ -465,11 +464,10 @@ export default function PremiumChatPage() {
 					{conversations.map((convo) => (
 						<div
 							key={convo.id}
-							className={`group relative flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-								activeConversationId === convo.id
+							className={`group relative flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 ${activeConversationId === convo.id
 									? "bg-blue-500 text-white shadow-md"
-									: "hover:bg-gray-100"
-							}`}
+									: "hover:bg-muted"
+								}`}
 							onClick={() => {
 								if (editingConversationId !== convo.id) {
 									fetchConversationMessages(convo.id)
@@ -498,17 +496,16 @@ export default function PremiumChatPage() {
 									</Menu.Button>
 									<Menu.Items
 										anchor="bottom end"
-										className="w-40 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+										className="w-40 origin-top-right divide-y divide-border rounded-md bg-popover shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
 										<div className="px-1 py-1">
 											<Menu.Item>
 												{({ active }) => (
 													<button
 														onClick={() => handleRename(convo)}
-														className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${
-															active
+														className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${active
 																? "bg-blue-500 text-white"
-																: "text-gray-900"
-														}`}>
+																: "text-foreground"
+															}`}>
 														<Pencil className="w-4 h-4 mr-2" />
 														Rename
 													</button>
@@ -518,11 +515,10 @@ export default function PremiumChatPage() {
 												{({ active }) => (
 													<button
 														onClick={() => handleDelete(convo.id)}
-														className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${
-															active
+														className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${active
 																? "bg-red-500 text-white"
 																: "text-red-600"
-														}`}>
+															}`}>
 														<Trash2 className="w-4 h-4 mr-2" />
 														Delete
 													</button>
@@ -543,13 +539,13 @@ export default function PremiumChatPage() {
 				/>
 			)}
 			{/* Main Content */}
-			<main className="flex-1 flex flex-col h-full bg-gradient-to-b from-white to-blue-50">
+			<main className="flex-1 flex flex-col h-full bg-gradient-to-b from-background to-muted/30">
 				{/* Mobile Header */}
-				<header className="md:hidden flex items-center justify-between p-4 bg-white/70 backdrop-blur-lg border-b border-gray-200">
+				<header className="md:hidden flex items-center justify-between p-4 bg-background/70 backdrop-blur-lg border-b border-border">
 					<button onClick={() => setSidebarOpen(!isSidebarOpen)}>
-						<MenuIcon className="w-6 h-6 text-gray-600" />
+						<MenuIcon className="w-6 h-6 text-muted-foreground" />
 					</button>
-					<h1 className="text-lg font-semibold truncate text-gray-800">
+					<h1 className="text-lg font-semibold truncate text-foreground">
 						{activeConversationId
 							? conversations.find((c) => c.id === activeConversationId)?.title
 							: "New Chat"}
@@ -561,9 +557,9 @@ export default function PremiumChatPage() {
 				<div className="flex-1 p-4 md:p-6 overflow-y-auto pb-24 [mask-image:linear-gradient(to_bottom,black_calc(100%-6rem),transparent)]">
 					<div className="max-w-4xl mx-auto">
 						{messages.length === 0 && !isLoading && (
-							<div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
+							<div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
 								<Sparkles className="w-16 h-16 mb-4 text-blue-400" />
-								<h2 className="text-2xl font-semibold text-gray-700">
+								<h2 className="text-2xl font-semibold text-foreground">
 									Start a new conversation
 								</h2>
 								<p>Ask me anything about your subjects!</p>
@@ -572,15 +568,13 @@ export default function PremiumChatPage() {
 						{messages.map((msg, index) => (
 							<div
 								key={index}
-								className={`flex my-5 gap-3 ${
-									msg.role === "user" ? "justify-end" : "justify-start"
-								}`}>
-								<div
-									className={`max-w-2xl p-4 rounded-2xl shadow-md ${
-										msg.role === "user"
-											? "bg-blue-500 text-white rounded-br-lg"
-											: "bg-white text-gray-800 rounded-bl-lg"
+								className={`flex my-5 gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"
 									}`}>
+								<div
+									className={`max-w-2xl p-4 rounded-2xl shadow-md ${msg.role === "user"
+											? "bg-blue-500 text-white rounded-br-lg"
+											: "bg-card text-card-foreground rounded-bl-lg"
+										}`}>
 									{msg.role === "assistant" ? (
 										<StyledMarkdown content={msg.content} />
 									) : (
@@ -617,7 +611,7 @@ export default function PremiumChatPage() {
 						))}
 						{isLoading && (
 							<div className="flex justify-start">
-								<div className="p-4 rounded-2xl shadow-md bg-white text-gray-800 rounded-bl-none">
+								<div className="p-4 rounded-2xl shadow-md bg-card text-card-foreground rounded-bl-none">
 									<div className="flex items-center space-x-2">
 										<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
 										<div
@@ -636,15 +630,15 @@ export default function PremiumChatPage() {
 				</div>
 
 				{/* User Input Form */}
-				<div className="p-2 md:p-4 bg-gradient-to-t from-white/50 to-transparent">
+				<div className="p-2 md:p-4 bg-gradient-to-t from-background/50 to-transparent">
 					<div className="max-w-4xl mx-auto">
 						{/* Attached Files Display */}
 						<div className="flex flex-wrap gap-2 mb-2">
 							{attachedFiles.map((file, index) => (
 								<div
 									key={index}
-									className="flex items-center bg-gray-200 rounded-lg pl-2 pr-1 py-1 text-sm">
-									<FileIcon className="w-4 h-4 mr-2 text-gray-600" />
+									className="flex items-center bg-muted rounded-lg pl-2 pr-1 py-1 text-sm">
+									<FileIcon className="w-4 h-4 mr-2 text-muted-foreground" />
 									<span className="truncate max-w-xs">{file.file.name}</span>
 									{file.status === "processing" && (
 										<Loader className="w-4 h-4 ml-2 animate-spin" />
@@ -656,7 +650,7 @@ export default function PremiumChatPage() {
 									)}
 									<button
 										onClick={() => removeFile(file.file)}
-										className="ml-1 p-0.5 rounded-full hover:bg-gray-300">
+										className="ml-1 p-0.5 rounded-full hover:bg-muted-foreground/20">
 										<X className="w-3 h-3" />
 									</button>
 								</div>
@@ -665,7 +659,7 @@ export default function PremiumChatPage() {
 						<div className="flex flex-col-reverse md:flex-row md:items-center gap-2 md:gap-4">
 							<form
 								onSubmit={handleSubmit}
-								className="flex-1 flex items-center bg-white rounded-full shadow-md border border-gray-200 overflow-hidden w-full">
+								className="flex-1 flex items-center bg-background rounded-full shadow-md border border-border overflow-hidden w-full">
 								<input
 									type="file"
 									ref={fileInputRef}
@@ -678,7 +672,7 @@ export default function PremiumChatPage() {
 									type="button"
 									onClick={() => fileInputRef.current?.click()}
 									disabled={isUploading}
-									className="p-2 md:p-3 text-gray-500 rounded-full hover:bg-gray-100 disabled:opacity-50 transition-colors duration-200 shrink-0 ml-1.5">
+									className="p-2 md:p-3 text-muted-foreground rounded-full hover:bg-muted disabled:opacity-50 transition-colors duration-200 shrink-0 ml-1.5">
 									{isUploading ? (
 										<Loader className="w-5 h-5 animate-spin" />
 									) : (

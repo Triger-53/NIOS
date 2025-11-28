@@ -51,7 +51,7 @@ export default function Register() {
 						required
 						value={username}
 						onChange={(e) => setUsername(e.target.value)}
-						className="w-full border p-2 rounded"
+						className="w-full border border-border bg-background text-foreground p-2 rounded"
 					/>
 				</div>
 				<div>
@@ -63,7 +63,7 @@ export default function Register() {
 						required
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
-						className="w-full border p-2 rounded"
+						className="w-full border border-border bg-background text-foreground p-2 rounded"
 					/>
 				</div>
 				<div>
@@ -75,7 +75,7 @@ export default function Register() {
 						required
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
-						className="w-full border p-2 rounded"
+						className="w-full border border-border bg-background text-foreground p-2 rounded"
 					/>
 				</div>
 				<Button
@@ -91,7 +91,7 @@ export default function Register() {
 				)}
 			</form>
 			<div className="mt-4 text-center">
-				<p className="text-sm text-gray-600">
+				<p className="text-sm text-muted-foreground">
 					Already have an account?{" "}
 					<a href="/login" className="text-blue-600 hover:underline">
 						Sign in

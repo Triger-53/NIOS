@@ -1,6 +1,6 @@
 export default function AboutPage() {
 	return (
-		<main className="max-w-3xl mx-auto px-6 py-12 text-gray-900">
+		<main className="max-w-3xl mx-auto px-6 py-12 text-foreground">
 			<h1 className="text-3xl font-bold mb-4">About This Website</h1>
 			<p className="mb-4">
 				This platform is built to help NIOS Class 10 (English Medium) students

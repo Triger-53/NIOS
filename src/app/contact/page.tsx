@@ -42,7 +42,7 @@ export default function ContactPage() {
 	}
 
 	return (
-		<main className="max-w-3xl mx-auto px-6 py-12 text-gray-900">
+		<main className="max-w-3xl mx-auto px-6 py-12 text-foreground">
 			<h1 className="text-3xl font-bold mb-4">Contact Us</h1>
 			<p className="mb-4">
 				Have feedback, suggestions, or business inquiries (sponsorship, ad
@@ -57,7 +57,7 @@ export default function ContactPage() {
 				</a>
 			</p>
 			<p>We usually reply within 24–48 hours. Thank you for visiting!</p>
-			<div className="mt-8 p-6 bg-gray-50 rounded-lg shadow-md">
+			<div className="mt-8 p-6 bg-card rounded-lg shadow-md">
 				<h2 className="text-2xl font-semibold mb-3">
 					Send us a message directly!
 				</h2>
@@ -65,7 +65,7 @@ export default function ContactPage() {
 					<div>
 						<label
 							htmlFor="name"
-							className="block text-sm font-medium text-gray-700">
+							className="block text-sm font-medium text-muted-foreground">
 							Your Name
 						</label>
 						<input
@@ -74,7 +74,7 @@ export default function ContactPage() {
 							name="name"
 							value={name}
 							onChange={e => setName(e.target.value)}
-							className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+							className="mt-1 block w-full px-3 py-2 border border-border bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 							placeholder="John Doe"
 							required
 						/>
@@ -82,7 +82,7 @@ export default function ContactPage() {
 					<div>
 						<label
 							htmlFor="email"
-							className="block text-sm font-medium text-gray-700">
+							className="block text-sm font-medium text-muted-foreground">
 							Your Email
 						</label>
 						<input
@@ -91,7 +91,7 @@ export default function ContactPage() {
 							name="email"
 							value={email}
 							onChange={e => setEmail(e.target.value)}
-							className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+							className="mt-1 block w-full px-3 py-2 border border-border bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 							placeholder="you@example.com"
 							required
 						/>
@@ -99,7 +99,7 @@ export default function ContactPage() {
 					<div>
 						<label
 							htmlFor="message"
-							className="block text-sm font-medium text-gray-700">
+							className="block text-sm font-medium text-muted-foreground">
 							Your Message
 						</label>
 						<textarea
@@ -108,7 +108,7 @@ export default function ContactPage() {
 							rows={5}
 							value={message}
 							onChange={e => setMessage(e.target.value)}
-							className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+							className="mt-1 block w-full px-3 py-2 border border-border bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 							placeholder="Tell us what&apos;s on your mind..."
 							required></textarea>
 					</div>

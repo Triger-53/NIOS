@@ -21,7 +21,7 @@ export default async function HomePage() {
 	const plan = profile?.plan || "free"
 
 	return (
-		<div className="min-h-screen bg-white p-4 md:p-12 text-gray-900">
+		<div className="min-h-screen bg-background p-4 md:p-12 text-foreground">
 			<section className="text-center max-w-4xl mx-auto mb-12">
 				<h1 className="text-3xl md:text-5xl font-bold mb-4">
 					Master NIOS Class 10 in 1 Day (English Medium)
@@ -89,7 +89,7 @@ export default async function HomePage() {
 					<Card key={subj.slug} className="hover:shadow-xl transition">
 						<CardContent className="p-6">
 							<h2 className="text-xl font-semibold mb-2">{subj.title}</h2>
-							<p className="text-sm text-gray-600 mb-4">{subj.description}</p>
+							<p className="text-sm text-muted-foreground mb-4">{subj.description}</p>
 							<Link
 								className="text-blue-600 hover:underline text-sm"
 								href={`/subjects/${subj.slug}`}>

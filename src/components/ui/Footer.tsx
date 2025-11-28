@@ -4,7 +4,7 @@ import Link from "next/link"
 
 export default function Footer() {
 	return (
-		<footer className="bg-gray-100 border-t text-sm text-gray-700">
+		<footer className="bg-muted border-t border-border text-sm text-muted-foreground">
 			<div className="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center">
 				<p className="mb-2 md:mb-0">
 					© {new Date().getFullYear()} Triger Studio — All rights reserved.

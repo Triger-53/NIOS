@@ -61,22 +61,22 @@ export default function Navbar() {
 
 	return (
 		<header className="sticky top-0 w-full z-50">
-			<nav className="container bg-white/80 backdrop-blur-sm max-w-7xl mx-auto px-6 py-3 mt-3 rounded-full shadow-md border flex justify-between items-center">
-				<Link href="/" className="text-xl font-bold text-zinc-900">
+			<nav className="container bg-background/80 backdrop-blur-sm max-w-7xl mx-auto px-6 py-3 mt-3 rounded-full shadow-md border border-border flex justify-between items-center">
+				<Link href="/" className="text-xl font-bold text-foreground">
 					NIOS Class 10
 				</Link>
 
 				{/* Desktop Menu */}
-				<div className="hidden md:flex gap-6 text-zinc-700 text-sm font-semibold items-center">
-					<Link href="/" className="hover:text-zinc-900 transition-colors">Home</Link>
-					<Link href="/subjects" className="hover:text-zinc-900 transition-colors">Subjects</Link>
+				<div className="hidden md:flex gap-6 text-muted-foreground text-sm font-semibold items-center">
+					<Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+					<Link href="/subjects" className="hover:text-foreground transition-colors">Subjects</Link>
 					{showAdvanceNotesLink && (
-						<Link href="/advance-notes" className="hover:text-zinc-900 transition-colors">Advance Notes</Link>
+						<Link href="/advance-notes" className="hover:text-foreground transition-colors">Advance Notes</Link>
 					)}
-					<Link href="/premium" className="hover:text-zinc-900 transition-colors">Premium</Link>
-					<Link href="/about" className="hover:text-zinc-900 transition-colors">About</Link>
-					<Link href="/contact" className="hover:text-zinc-900 transition-colors">Contact</Link>
-					
+					<Link href="/premium" className="hover:text-foreground transition-colors">Premium</Link>
+					<Link href="/about" className="hover:text-foreground transition-colors">About</Link>
+					<Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link>
+
 					{user ? (
 						<SignOut />
 					) : (
@@ -104,16 +104,16 @@ export default function Navbar() {
 
 			{/* Mobile Menu */}
 			{isMobileMenuOpen && (
-				<div className="md:hidden mt-2 bg-white/80 backdrop-blur-sm rounded-lg shadow-md border p-4">
-					<div className="flex flex-col gap-4 text-zinc-700 text-sm font-semibold">
-						<Link href="/" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>Home</Link>
-						<Link href="/subjects" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>Subjects</Link>
+				<div className="md:hidden mt-2 bg-background/80 backdrop-blur-sm rounded-lg shadow-md border border-border p-4">
+					<div className="flex flex-col gap-4 text-muted-foreground text-sm font-semibold">
+						<Link href="/" className="hover:text-foreground transition-colors" onClick={closeMobileMenu}>Home</Link>
+						<Link href="/subjects" className="hover:text-foreground transition-colors" onClick={closeMobileMenu}>Subjects</Link>
 						{showAdvanceNotesLink && (
-							<Link href="/advance-notes" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>Advance Notes</Link>
+							<Link href="/advance-notes" className="hover:text-foreground transition-colors" onClick={closeMobileMenu}>Advance Notes</Link>
 						)}
-						<Link href="/premium" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>Premium</Link>
-						<Link href="/about" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>About</Link>
-						<Link href="/contact" className="hover:text-zinc-900 transition-colors" onClick={closeMobileMenu}>Contact</Link>
+						<Link href="/premium" className="hover:text-foreground transition-colors" onClick={closeMobileMenu}>Premium</Link>
+						<Link href="/about" className="hover:text-foreground transition-colors" onClick={closeMobileMenu}>About</Link>
+						<Link href="/contact" className="hover:text-foreground transition-colors" onClick={closeMobileMenu}>Contact</Link>
 
 						{user ? (
 							<SignOut />
