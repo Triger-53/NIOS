@@ -1,7 +1,3 @@
-This is a full, detailed module on the **MSME and Entrepreneurial Ecosystem**, covering the definition of enterprises, the role of government support systems, financing schemes, incubation, and essential e-resources.
-
----
-
 ## Lesson 7: Micro, Small and Medium Enterprises (MSMEs) and Business Structures
 
 This lesson teaches you about the immense importance of Micro, Small and Medium Enterprises (MSMEs) in the economy and the different legal structures an entrepreneur can choose for their business.

@@ -1,7 +1,3 @@
-This is a detailed overview of the core concepts of entrepreneurship, covering what it is, who an entrepreneur is, and why it is important, drawing entirely from the provided sources.
-
----
-
 ## I. Introduction to Entrepreneurship (Lesson 1)
 
 Entrepreneurship is often described as the **ultimate career in capitalism**. If you are hard-working, smart, creative, willing to take risks, and good with people, you are inherently driven towards this path.

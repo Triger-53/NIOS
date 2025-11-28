@@ -1,7 +1,3 @@
-That is an excellent request. Following our previous lesson on the fundamentals of entrepreneurship, this detailed module will teach you about **Creativity, Innovation, Value Addition, and the Entrepreneur’s role as a Problem Solver** (including Social Entrepreneurship).
-
----
-
 ## Lesson 4: Creativity: A Necessity for Entrepreneurial Success
 
 ### I. Understanding Creativity

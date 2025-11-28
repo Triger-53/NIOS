@@ -1,7 +1,3 @@
-This detailed curriculum focuses on the essential psychological and ethical dimensions of entrepreneurship, including what drives an entrepreneur and the characteristics that lead to success.
-
----
-
 ## Lesson 7: Entrepreneurial Values, Attitudes, and Ethics
 
 This lesson covers the internal beliefs, external behaviours, and moral framework that guide an entrepreneur in their venture.
