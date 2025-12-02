@@ -9,10 +9,11 @@ import { ConnectionState, LogMessage } from '@/types/live-types';
 import { X } from 'lucide-react';
 
 interface LiveOverlayProps {
-    onClose: () => void;
+  onClose: () => void;
+  context?: string;
 }
 
-const LiveOverlay: React.FC<LiveOverlayProps> = ({ onClose }) => {
+const LiveOverlay: React.FC<LiveOverlayProps> = ({ onClose, context }) => {
   const [status, setStatus] = useState<ConnectionState>(ConnectionState.DISCONNECTED);
   const [messages, setMessages] = useState<LogMessage[]>([]);
   const [isVideoActive, setIsVideoActive] = useState(false);
@@ -52,7 +53,7 @@ const LiveOverlay: React.FC<LiveOverlayProps> = ({ onClose }) => {
       // Final safety net: ensure disconnection on unmount
       if (statusRef.current === ConnectionState.CONNECTED) {
         clientRef.current?.disconnect();
-      }      
+      }
     };
   }, [addMessage, handleVolume]);
 
@@ -64,30 +65,30 @@ const LiveOverlay: React.FC<LiveOverlayProps> = ({ onClose }) => {
 
   const stopMicrophone = () => {
     if (audioStreamRef.current) {
-        audioStreamRef.current.getTracks().forEach(track => track.stop());
-        audioStreamRef.current = null;
-        console.log("Microphone stream stopped.");
+      audioStreamRef.current.getTracks().forEach(track => track.stop());
+      audioStreamRef.current = null;
+      console.log("Microphone stream stopped.");
     }
   };
 
   const handleToggleStart = async () => {
     // When stopping the session
     if (status === ConnectionState.CONNECTED) {
-        clientRef.current?.disconnect();
-        stopMicrophone();
-        setIsVideoActive(false);
-        setVideoError(null);
+      clientRef.current?.disconnect();
+      stopMicrophone();
+      setIsVideoActive(false);
+      setVideoError(null);
     } else {
-        if (clientRef.current) {
-            try {
-              const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-              audioStreamRef.current = stream;
-              await clientRef.current.connect(stream);
-            } catch (err) {
-              console.error("Microphone Error:", err);
-              setVideoError("Microphone access denied. Please check your browser permissions.");
-            }
+      if (clientRef.current) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioStreamRef.current = stream;
+          await clientRef.current.connect(stream, context);
+        } catch (err) {
+          console.error("Microphone Error:", err);
+          setVideoError("Microphone access denied. Please check your browser permissions.");
         }
+      }
     }
   };
 
@@ -100,10 +101,10 @@ const LiveOverlay: React.FC<LiveOverlayProps> = ({ onClose }) => {
   };
 
   const toggleVideo = () => {
-      if (!isVideoActive) {
-        setVideoError(null); // Clear previous errors when trying to turn on video
-      }
-      setIsVideoActive(prev => !prev);
+    if (!isVideoActive) {
+      setVideoError(null); // Clear previous errors when trying to turn on video
+    }
+    setIsVideoActive(prev => !prev);
   };
 
   const handleVideoFrame = useCallback((base64: string) => {
@@ -120,7 +121,7 @@ const LiveOverlay: React.FC<LiveOverlayProps> = ({ onClose }) => {
         <h1 className="text-lg font-medium tracking-wide text-white/90">LIVE TEACHER</h1>
       </div>
       <button onClick={handleClose} className="p-2 rounded-full hover:bg-white/10 transition-colors text-white">
-          <X className="w-6 h-6" />
+        <X className="w-6 h-6" />
       </button>
     </header>
   );
@@ -134,8 +135,8 @@ const LiveOverlay: React.FC<LiveOverlayProps> = ({ onClose }) => {
         <main className="flex-1 flex flex-col pt-20">
           {/* Top half for Video */}
           <div className="relative flex-1 bg-black flex items-center justify-center">
-            <VideoPreview 
-              isActive={isVideoActive} 
+            <VideoPreview
+              isActive={isVideoActive}
               onFrame={handleVideoFrame}
               onError={handleVideoError}
             />
@@ -160,13 +161,13 @@ const LiveOverlay: React.FC<LiveOverlayProps> = ({ onClose }) => {
           {/* Show Video Error if it exists */}
           {videoError && (
             <div className="absolute inset-0 flex items-center justify-center p-8 z-20">
-                <div className="relative text-center bg-black/50 backdrop-blur-sm p-8 rounded-lg border border-rose-500/50">
-                    <button onClick={() => setVideoError(null)} className="absolute top-2 right-2 p-1 rounded-full text-slate-300 hover:bg-white/10 transition-colors">
-                        <X className="w-5 h-5" />
-                    </button>
-                    <h3 className="text-lg font-semibold text-rose-400 mb-2">Camera Error</h3>
-                    <p className="text-slate-300 max-w-sm pt-2">{videoError}</p>
-                </div>
+              <div className="relative text-center bg-black/50 backdrop-blur-sm p-8 rounded-lg border border-rose-500/50">
+                <button onClick={() => setVideoError(null)} className="absolute top-2 right-2 p-1 rounded-full text-slate-300 hover:bg-white/10 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+                <h3 className="text-lg font-semibold text-rose-400 mb-2">Camera Error</h3>
+                <p className="text-slate-300 max-w-sm pt-2">{videoError}</p>
+              </div>
             </div>
           )}
 

@@ -465,8 +465,8 @@ export default function PremiumChatPage() {
 						<div
 							key={convo.id}
 							className={`group relative flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200 ${activeConversationId === convo.id
-									? "bg-blue-500 text-white shadow-md"
-									: "hover:bg-muted"
+								? "bg-blue-500 text-white shadow-md"
+								: "hover:bg-muted"
 								}`}
 							onClick={() => {
 								if (editingConversationId !== convo.id) {
@@ -503,8 +503,8 @@ export default function PremiumChatPage() {
 													<button
 														onClick={() => handleRename(convo)}
 														className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${active
-																? "bg-blue-500 text-white"
-																: "text-foreground"
+															? "bg-blue-500 text-white"
+															: "text-foreground"
 															}`}>
 														<Pencil className="w-4 h-4 mr-2" />
 														Rename
@@ -516,8 +516,8 @@ export default function PremiumChatPage() {
 													<button
 														onClick={() => handleDelete(convo.id)}
 														className={`group flex rounded-md items-center w-full px-2 py-2 text-sm ${active
-																? "bg-red-500 text-white"
-																: "text-red-600"
+															? "bg-red-500 text-white"
+															: "text-red-600"
 															}`}>
 														<Trash2 className="w-4 h-4 mr-2" />
 														Delete
@@ -572,8 +572,8 @@ export default function PremiumChatPage() {
 									}`}>
 								<div
 									className={`max-w-2xl p-4 rounded-2xl shadow-md ${msg.role === "user"
-											? "bg-blue-500 text-white rounded-br-lg"
-											: "bg-card text-card-foreground rounded-bl-lg"
+										? "bg-blue-500 text-white rounded-br-lg"
+										: "bg-card text-card-foreground rounded-bl-lg"
 										}`}>
 									{msg.role === "assistant" ? (
 										<StyledMarkdown content={msg.content} />
@@ -712,7 +712,20 @@ export default function PremiumChatPage() {
 					</div>
 				</div>
 			</main>
-			{isLiveActive && <LiveOverlay onClose={() => setIsLiveActive(false)} />}
+			{isLiveActive && (
+				<LiveOverlay
+					onClose={() => setIsLiveActive(false)}
+					context={
+						(summary ? `Summary of previous conversation:\n${summary}\n\n` : "") +
+						(messages.length > 0
+							? `Recent messages:\n${messages
+								.slice(-10)
+								.map((m) => `${m.role}: ${m.content}`)
+								.join("\n")}`
+							: "")
+					}
+				/>
+			)}
 		</div>
 	)
 }

@@ -41,7 +41,7 @@ export class GeminiLiveClient {
     this.ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
   }
 
-  async connect(_videoStream: MediaStream | null = null) {
+  async connect(_videoStream: MediaStream | null = null, context: string = '') {
     try {
       this.statusCallback(ConnectionState.CONNECTING);
 
@@ -83,18 +83,7 @@ export class GeminiLiveClient {
         }]
       };
 
-      // Connect to Gemini Live
-      const sessionPromise = this.ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
-        config: {
-          responseModalities: [Modality.AUDIO],
-          tools: [searchBooksTool],
-          speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } },
-          },
-          inputAudioTranscription: {},
-          outputAudioTranscription: {},
-          systemInstruction: `You are a helpful, witty, and concise AI NIOS teacher. You can see and hear the student.
+      let finalSystemInstruction = `You are a helpful, witty, and concise AI NIOS teacher. You can see and hear the student.
 
 CRITICAL INSTRUCTIONS:
 1.  **Intent Classification**:
@@ -111,7 +100,24 @@ CRITICAL INSTRUCTIONS:
     *   If the user speaks Hinglish, match the dominant language.
 4.  **Tone**: Be encouraging, patient, and like a real teacher.
 
-If the user speaks another language, politely inform them in English and Hindi that you only support these two languages.`,
+If the user speaks another language, politely inform them in English and Hindi that you only support these two languages.`;
+
+      if (context) {
+        finalSystemInstruction += `\n\nHere is the context of the recent text chat conversation the user was having before calling you. Use this to answer questions about what you were just talking about:\n${context}`;
+      }
+
+      // Connect to Gemini Live
+      const sessionPromise = this.ai.live.connect({
+        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+        config: {
+          responseModalities: [Modality.AUDIO],
+          tools: [searchBooksTool],
+          speechConfig: {
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } },
+          },
+          inputAudioTranscription: {},
+          outputAudioTranscription: {},
+          systemInstruction: finalSystemInstruction,
         },
         callbacks: {
           onopen: () => {
