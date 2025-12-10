@@ -63,7 +63,25 @@ export async function POST(req: NextRequest) {
       User question: "${question}"
     `;
     const classificationResult = await classificationModel.generateContent(classification_prompt);
-    const intent = JSON.parse(classificationResult.response.text()).intent;
+    const rawText = classificationResult.response.text();
+    console.log('[/api/ask-teacher] Raw classification response:', rawText);
+
+    let intent = 'general_query';
+    try {
+      // Helper to clean JSON string (remove markdown code blocks if present)
+      const cleanJson = (text: string) => {
+        return text.replace(/```json\n?|\n?```/g, '').trim();
+      };
+
+      const parsed = JSON.parse(cleanJson(rawText));
+      if (parsed.intent) {
+        intent = parsed.intent;
+      }
+    } catch (e) {
+      console.error('[/api/ask-teacher] Failed to parse classification JSON:', e);
+      // Fallback to general_query is already set
+    }
+
     console.log('[/api/ask-teacher] User intent classified as:', intent);
 
     if (intent === 'small_talk') {
@@ -92,9 +110,9 @@ export async function POST(req: NextRequest) {
     // 2. Retrieve Relevant Context from Supabase
     console.log('[/api/ask-teacher] Retrieving relevant context from Supabase...');
     const { data: retrieved_chunks, error: rpcError } = await supabase.rpc('match_documents', {
-        query_embedding: queryEmbedding,
-        match_threshold: 0.5,
-        match_count: 7,
+      query_embedding: queryEmbedding,
+      match_threshold: 0.5,
+      match_count: 7,
     });
 
     if (rpcError) {
@@ -155,14 +173,14 @@ export async function POST(req: NextRequest) {
     const history_string =
       history && history.length > 0
         ? "--- CHAT HISTORY ---\n" +
-          history
-            .map((msg: { role: string; content: string }) =>
-              msg.role === "user"
-                ? `Student: ${msg.content}`
-                : `Teacher: ${msg.content}`
-            )
-            .join("\n") +
-          "\n\n"
+        history
+          .map((msg: { role: string; content: string }) =>
+            msg.role === "user"
+              ? `Student: ${msg.content}`
+              : `Teacher: ${msg.content}`
+          )
+          .join("\n") +
+        "\n\n"
         : "";
 
     const summary_string = summary
