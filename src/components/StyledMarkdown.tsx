@@ -57,7 +57,8 @@ const Blockquote = ({ children, ...props }: any) => {
         const type = match[1].toLowerCase() as 'note' | 'tip' | 'important' | 'warning' | 'caution';
         // Remove the [!TYPE] text from the first paragraph
         const newFirstChild = React.cloneElement(firstChild, {
-          ...firstChild.props,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...(firstChild.props as any),
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           children: [text.replace(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/, '').trim(), ...(firstChild.props as any).children.slice(1)]
         });
