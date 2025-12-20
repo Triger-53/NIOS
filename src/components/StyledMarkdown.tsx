@@ -62,17 +62,18 @@ const CodeBlock = ({ inline, className, children, ...props }: any) => {
 const StyledMarkdown = ({ content }: { content: string }) => {
   return (
     <article className="prose prose-zinc dark:prose-invert max-w-none
-      prose-headings:font-semibold prose-headings:tracking-tight
+      prose-headings:font-bold prose-headings:tracking-tight prose-headings:mb-4 prose-headings:mt-6
       prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
-      prose-p:leading-7 prose-p:text-base prose-p:text-zinc-700 dark:prose-p:text-zinc-300
-      prose-li:text-zinc-700 dark:prose-li:text-zinc-300 prose-li:my-1
-      prose-strong:font-semibold prose-strong:text-zinc-900 dark:prose-strong:text-zinc-100
+      prose-p:leading-relaxed prose-p:text-base prose-p:mb-4 prose-p:text-zinc-800 dark:prose-p:text-zinc-200
+      prose-li:text-zinc-800 dark:prose-li:text-zinc-200 prose-li:my-1.5
+      prose-strong:font-bold prose-strong:text-zinc-900 dark:prose-strong:text-zinc-100
       prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
-      prose-code:text-sm prose-code:font-mono prose-code:text-zinc-800 dark:prose-code:text-zinc-200
+      prose-code:text-sm prose-code:font-mono prose-code:text-pink-600 dark:prose-code:text-pink-400
       prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md
       prose-code:before:content-none prose-code:after:content-none
       prose-pre:bg-transparent prose-pre:p-0 prose-pre:m-0
       prose-ol:list-decimal prose-ul:list-disc prose-ul:pl-6 prose-ol:pl-6
+      prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-zinc-600 dark:prose-blockquote:text-zinc-400
       [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
