@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
     console.log('[/api/ask-teacher] Generating answer with Gemini...');
     const llm = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-    "You are an expert, patient, and thorough teacher. " +
+    const system_instruction = "You are an expert, patient, and thorough teacher. " +
       "Answer the student's question based on your knowledge. Your knowledge is derived from the context provided below. " +
       "Do not mention the context or that your knowledge is limited. Speak as if you know this information innately. " +
       "If the information to answer the question is not available, politely state that you cannot answer that question without providing a reason. " +
